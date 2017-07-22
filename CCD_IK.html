@@ -20,12 +20,34 @@
 				font-size:13px;
 				text-align:center;
 			}
+
+			 #explain {
+		        position: absolute;
+		        top: 50px;
+		        left: 0;
+		        margin: 10px;
+		        padding: 10px;
+		        background-color: rgba(0,0,0, 0.5);
+		        border: solid 1px rgba(128, 128, 128, 0.4);
+		        width: 30%;
+		        color: white
+		      }
 		</style>
 	</head>
 	<body>
 
 		<div id="container"></div>
 		<div id="info">Cyclic Coordinate Descent task.<br> This code is inherired from three.js demo: <a href="https://threejs.org/examples/?q=line#webgl_geometry_spline_editor">webgl_geometry_spline_editor</a> </div>
+
+		<div id="explain">
+		CCD-IKを実装しました。
+		３ｄ表現にはthree.js　を使用しています。
+		右端のボックスが固定側で左端のボックスが末端になります。
+		各ボックスはカーソルで選択することで3次元上を動かすことができる矢印が表示されます。
+		three.jsのサンプルの <a href="https://threejs.org/examples/?q=line#webgl_geometry_spline_editor">webgl_geometry_spline_editor</a>　
+		をベースにCCD-IKを実装しています。
+		一般的に特異点まわりでみられる暴走もほとんどおこらず安定動作していることが確認できました。
+　		</div>
 
 		<script src="https://threejs.org/build/three.js"></script> 
 
