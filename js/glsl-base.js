@@ -65,9 +65,13 @@ window.onload = function(){
   u.mouse = g.getUniformLocation(p, 'mouse');
 
   // mouse 座標取得
-  m = [0, 0];
-  var mS = 500.0;
-  document.addEventListener("mousemove", e => {m[0] = e.clientX/mS; m[1] = - e.clientY/mS;});
+  m = [0.5, 0.5];
+  var mS = 700.0;
+  var sX = window.parent.screen.width;
+  var sY = window.parent.screen.height;
+  console.log(sX);
+  console.log(sY);
+  document.addEventListener("mousemove", e => {m[0] = e.clientX/sX; m[1] = e.clientY/sY;});
   //document.addEventListener("mousemove", e => {m[0] = e.clientX - m[0]; m[1] = e.clientY - m[1];});
 
 
