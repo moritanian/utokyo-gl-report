@@ -2,6 +2,8 @@
 precision mediump float;
 #endif
 
+//#extension GL_OES_standard_derivatives : enable
+
 #define PI 3.14159265
 
 uniform float time;
@@ -263,7 +265,9 @@ bool intersectSphere(Ray ray, Sphere sphere, inout Hit firstHit){
     
     hit.hitDistance = t2;
     hit.hitPoint = ray.origin + t2 * ray.dir;
-    hit.normal = normalize(hit.hitPoint - sphere.center);   
+    hit.normal = normalize(hit.hitPoint - sphere.center); 
+    hit.mat = sphere.mat;
+
   // どちらも前方
   }else{
     hit.hitDistance = t1;
@@ -350,6 +354,10 @@ Hit raycast(Ray ray){
 
 bool _shadeDiffSpot(inout Ray ray, Hit hit, Material mat, inout vec3 ret){
   // spot light方向
+    // カメラから遠方の場合は計算しない
+  if(hit.hitDistance > 100.0){
+    return false;
+  }
   ray.origin = hit.hitPoint + EP * hit.normal;
   ray.dir =  normalize(light.position - hit.hitPoint); 
   float cosN = dot(hit.normal, ray.dir);
@@ -378,6 +386,11 @@ vec3 _shadeDiffDirLight(Hit hit, Material mat){
 }
 
 bool _shadeSpecular(inout Ray ray, Hit hit, Material mat, inout vec3 ret){
+  // カメラから遠方の場合は計算しない
+  if(hit.hitDistance > 100.0){
+    return false;
+  }
+
   vec3 n2 = 2.0 * dot(hit.fromVec, hit.normal) * hit.normal;
   ray.dir = hit.fromVec - n2;
   ray.origin = hit.hitPoint + ray.dir * EP;
@@ -392,8 +405,11 @@ vec3 _shadeAmbient(Hit hit, Material mat){
 }
 bool _shadeTransparency(inout Ray ray, Hit hit, Material mat, inout vec3 ret){
   // # TODO 曲げる, 透過色
-  ray.dir = hit.fromVec;
-  ray.origin = hit.hitPoint + ray.dir * EP;
+  vec3 sin2n = cross(cross(hit.normal, hit.fromVec), hit.normal) / 1.2;
+  float cos2 = sqrt(1.0 - dot(sin2n, sin2n));
+
+  ray.dir = - hit.normal * cos2 + sin2n ;
+  ray.origin = hit.hitPoint + ray.dir * 0.9;
   ret = mat.transparentColor * mat.transmittance;
   return true;
 }
@@ -407,6 +423,13 @@ vec3 shade3 (Hit hit, Ray oldray){
   Ray ray;
 
   vec3 color = BLACK;
+
+  // 乱反射
+  if( mat.diffuseRate > 0.0){
+    // directional light
+    color += _shadeDiffDirLight(hit, mat);
+
+  }
 
   // 発光
   if(mat.ambientColor != BLACK){
@@ -475,14 +498,15 @@ vec3 shade (Hit hit, Ray oldray){
   if( mat.diffuseRate > 0.0){
     // spot light方向
     if(_shadeDiffSpot(ray, hit, mat, ret)){
-      color += ret * shade2(raycast(ray), ray);
+      color += ret * shade3(raycast(ray), ray); // shade2 ではなく3!
     }
     
     // 床面からの光
     Hit floorHit;
+    /*
     if(_shadeDiffFloor(ray, hit, mat, ret, floorHit)){
       color += ret * shade2(floorHit, ray);
-    }
+    }*/
 
     // directional light
     color += _shadeDiffDirLight(hit, mat);
@@ -516,7 +540,7 @@ void initScene(inout Ray ray){
   // camera
   float cameraRadius = 7.0;
   float theta = (mouse.x - 0.5) * PI;
-  float phai = (mouse.y - 0.5) * PI;
+  float phai = (mouse.y - 0.3) * PI;
   Camera camera;
   camera.up = vec3(0.0, 1.0, 0.0);
   camera.to = vec3(0.0, 1.8, 0.3);
@@ -562,7 +586,7 @@ void initScene(inout Ray ray){
   mirrors[0].up = vec3(0.0, 0.8, 0.6);
   mirrors[0].right = RIGHT;
   mirrors[0].normal = vec3(0.0, -0.6, 0.8);
-  mirrors[0].mat.specularColor = vec3(1.0, 1.0, 1.0);
+  mirrors[0].mat.specularColor = vec3(0.93, 0.93, 1.0);
   mirrors[0].mat.specularRate = 1.0;
 
   mirrors[1].center = vec3(0.1, 2.1, -2.0) + vec3(0.0, -0.6, 0.8) * 10.0 ;
@@ -598,9 +622,12 @@ void initScene(inout Ray ray){
   
   float t3 = 1.7;
   spheres[3].mat.diffuseColor = vec3(0.2, 0.9, 0.9);
-  spheres[3].mat.diffuseRate = 0.1;
+  spheres[3].mat.diffuseRate = 0.02;
   spheres[3].mat.specularColor = spheres[3].mat.diffuseColor; 
-  spheres[3].mat.specularRate = 0.05; 
+  spheres[3].mat.specularRate = 0.01; 
+  spheres[3].mat.transparentColor = vec3(1.0, 1.0, 1.0);
+  spheres[3].mat.transmittance = 0.6;
+
   spheres[3].center = vec3(1.2*cos(time/t3), 1.0*sin(time/t3) + 3.0, 1.2);
   spheres[3].radius = 0.4;
   
@@ -609,8 +636,8 @@ void initScene(inout Ray ray){
   boxes[0].size = vec3(0.5, 0.5, 0.5);
   boxes[0].mat.diffuseColor = vec3(0.3 ,0.2, 0.15);
   boxes[0].mat.diffuseRate = 0.1;
-  boxes[0].mat.specularColor = vec3(0.23, 0.13, 0.1);
-  boxes[0].mat.specularRate = 0.9;
+  //boxes[0].mat.specularColor = vec3(0.23, 0.13, 0.1);
+  //boxes[0].mat.specularRate = 0.9;
   
 }
 
