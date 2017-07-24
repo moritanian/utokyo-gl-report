@@ -166,10 +166,8 @@ window.onload = function(){
    
     // mouse 座標取得
     m = [0.5, 0.5];
-    var mS = 700.0;
-    var sX = window.parent.screen.width;
-    var sY = window.parent.screen.height;
-    document.addEventListener("mousemove", e => {m[0] = e.clientX/sX; m[1] = e.clientY/sY;});
+    document.addEventListener("mousemove", function(e){m[0] = e.clientX/x; m[1] = e.clientY/y;});
+    //document.addEventListener('resize', function(e){sX = window.parent.screen.width; sY = window.parent.screen.height;});
   
     // VBO用のバッファオブジェクトを生成
     g.bindBuffer(g.ARRAY_BUFFER, g.createBuffer());
@@ -219,4 +217,4 @@ window.onload = function(){
       requestAnimationFrame(render);
     })();
   }
-};
+}
