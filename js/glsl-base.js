@@ -383,7 +383,7 @@ window.onload = function(){
             var userStructs = {};
 
             function getStructClass(sName){
-                return `hl-struct-${sName}`;
+                return `hl-${i}-struct-${sName}`;
             }
               
             var patterForLineSplit = (function(){
@@ -453,7 +453,12 @@ window.onload = function(){
                 
                 // #defineとか
                 if(line !== "" && line[0] === "#"){
-                    return getHighLightSpan(line, hlSharp)
+                    var es = line.split(" ");
+                    var _class = hlSharp;
+                    if(es[0] === "#define"){
+                        _class = [_class, getStructClass(es[1])];
+                    }
+                    return getHighLightSpan(line, _class);
                 }
 
                 // 複数行コメント
@@ -730,18 +735,31 @@ window.onload = function(){
            
             var activeWordElem;
 
+            // 宣言へジャンプ機能
             lE.addEventListener('dblclick', function(e){
                 
+                activeWordElem = null;
                 var elm = document.elementFromPoint(e.clientX, e.clientY);
                 var tgClass = getStructClass(elm.textContent);
                 var cs = document.getElementsByClassName(tgClass);
-                if(cs.length > 0){
-                    activeWordElem = cs[0];
-                    var tp =  activeWordElem.getBoundingClientRect().top - w.innerHeight / 2 ;
-                    lE.scrollTop  += tp;
-                    //rangeWord(cs[0]);
-                    activeWordElem.classList.add('active-word');
+                
+                if(cs.length == 0)
+                    return false;
+
+                for(var id=cs.length - 1; id >= 0; id--){
+                    if(cs[id].getBoundingClientRect().top - e.clientY < 0){
+                        activeWordElem = cs[id];
+                        break;
+                    }
                 }
+
+                if(!activeWordElem)
+                    return false;
+                
+                var tp =  activeWordElem.getBoundingClientRect().top - w.innerHeight / 2 ;
+                lE.scrollTop  += tp;
+                //rangeWord(cs[0]);
+                activeWordElem.classList.add('active-word');
 
                 return false;
             });
@@ -749,6 +767,7 @@ window.onload = function(){
             lE.addEventListener('click', function(e){
                 if(activeWordElem){
                     activeWordElem.classList.remove('active-word');
+                    activeWordElem = null;
                 }
             });
 
