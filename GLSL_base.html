@@ -2,9 +2,17 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <script type="text/javascript" src="js/glsl-base.js.min"></script>
+    <link rel=stylesheet href="css/glsl-base.css"> 
+   
+    <script type="text/javascript" src="js/glsl-base.js"></script>
+
     <!--<script id="vs" source="shader/nothing.vs" type="xs/fs"></script> -->
-    <script id="fs" source="shader/floor3.fs"  type="xs/fs"></script> 
+    <glsl-base>
+        <debug value="true"></debug>
+        <tab-size value="6"></tab-size>
+    </glsl-base>
+
+    <script id="fs" source="shader/floor2.fs"  type="xs/fs"></script> 
     <script id="vs" type="xs/vs">
       // 頂点シェーダには一切手入れする必要なし
       attribute vec3 position;
@@ -12,6 +20,7 @@
         gl_Position = vec4(position, 1.0);
       }
     </script>
+
     <style>
       /* ウィンドウ全体にcanvasをぴったり配置するためのStyle */
       * {
@@ -21,11 +30,36 @@
       }
       html,body{
         height:100%;
+        background-color: black;
+      }
+      .back-wall {
+        background-image: url(img/Character01_Vis01.png);
+        width: 100%;
+        height: 100%;
+        position: absolute;
       }
     </style>
     <title>GLSL Base script sample</title>
   </head>
   <body>
     <canvas id="c"></canvas>
+    <div id="glsl-base-debug-container">
+      <div id="glsl-base-debug-normalizer">+</div>
+      <div id="glsl-base-debug-main">
+        <div class="top-tabs">
+          <ul class="tabs">
+            <li class="file-tab"> vertex.vs </li>
+            <li class="file-tab active-tab"> fragment.fs </li>
+          </ul>
+          <div class="minimize-btn">-</div>
+        </div>
+        <div class="back-wall"></div>
+        
+        <div id="glsl-base-debug">
+         
+        </div>
+      </div>
+    </div>
+
   </body>
 </html>
