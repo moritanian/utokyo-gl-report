@@ -119,7 +119,7 @@ window.onload = function(){
   dbgOpt = {tab: "\t"};
 
   var glsl_base_e = gebt('glsl-base');
-  if(glsl_base_e){
+  if(glsl_base_e && glsl_base_e.length > 0){
     var children = glsl_base_e[0].childNodes;
     for(var i=0; i<children.length; i++){
       if(i%2 == 0)
@@ -558,9 +558,6 @@ window.onload = function(){
               sc += top * st / t;
             })();
           })();
-          console.log(l);
-            
-        } else{
           console.log(l);
         }
 

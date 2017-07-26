@@ -15,12 +15,17 @@
   width: 30px;
   height: 30px;
   position: absolute;
-  background-color: #757373;
+  background-color: rgba(251, 251, 251, 0.28);
   text-align: center;
   font-size: 20px;
   cursor: pointer;
   user-select: none;
   display: none;
+}
+
+#glsl-base-debug-normalizer:hover {
+  background-color: rgba(251, 251, 251, 0.38);
+
 }
 
 #glsl-base-debug-main {
