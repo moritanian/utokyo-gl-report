@@ -35,10 +35,15 @@
 
 #glsl-base-debug-main .back-wall {
   opacity: 0.16;
-  color: rgba(255, 255, 255, 0.65);
+  background-color: rgba(255, 255, 255, 0.65);
 }
 
-#glsl-base-debug{
+#glsl-base-debug-files {
+  position: relative;
+  height: 100%;
+}
+
+#glsl-base-debug-files .glsl-base-debug{
   position: relative;
   overflow-y: scroll;
   height: 90%;
@@ -52,7 +57,7 @@
 
 #glsl-base-debug-container .top-tabs{
   position: relative;
-  background-color: rgba(255, 255, 255, 0.19);
+  background-color: rgba(255, 255, 255, 0.03);
   display: flex;
 }
 #glsl-base-debug-container .tabs{
@@ -62,11 +67,13 @@
 }
 
 #glsl-base-debug-container .tabs .file-tab{
-  background-color: rgba(255, 255, 255, 0);
+  background-color: rgba(255, 255, 255, 0.1);
   border: solid 0.5px rgba(125, 125, 125, 0.43);
   padding: 4px 12px;
   border-radius: 9px 6px 0px 0px / 15px 25px 0px 0px;
   cursor: pointer;
+  user-select: none;
+  
 }
 
 #glsl-base-debug-container .tabs .file-tab.active-tab{
@@ -93,7 +100,7 @@
   background-color: #888888;
 }
 
-#glsl-base-debug .line-number {
+.glsl-base-debug .line-number {
   padding-right: 10px;
   width: 18px;
   float: left;
@@ -102,7 +109,7 @@
   line-height: 14px;
 }
 
-#glsl-base-debug .error-line {
+.glsl-base-debug .error-line {
   background-color: #6c0909;
 }
 
@@ -116,48 +123,48 @@
   box-shadow: 1px 1px 6px 0px rgb(194, 234, 255);
 }
 
-#glsl-base-debug .hover-line {
+.glsl-base-debug .hover-line {
   background-color: #b32121;
 }
 
-#glsl-base-debug .active-word {
+.glsl-base-debug .active-word {
   background-color: rgba(136, 85, 0, 0.95);
   border-radius: 2px;
 }
 
-#glsl-base-debug .hl-val-type {
+.glsl-base-debug .hl-val-type {
   color: #28fbfb;
 }
 
-#glsl-base-debug .hl-attribute {
+.glsl-base-debug .hl-attribute {
   color: #5680dd;
 }
 
-#glsl-base-debug .hl-operator {
+.glsl-base-debug .hl-operator {
   color: #fb3981;
 }
 
-#glsl-base-debug .hl-conditional-operator {
+.glsl-base-debug .hl-conditional-operator {
   color: #fb3981;
 }
 
 
-#glsl-base-debug .hl-builtin-function {
+.glsl-base-debug .hl-builtin-function {
   color: #b1f6e9;
 }
 
-#glsl-base-debug .hl-comment {
+.glsl-base-debug .hl-comment {
   color: #8dac8d;
 }
 
-#glsl-base-debug .hl-sharp {
+.glsl-base-debug .hl-sharp {
   color: #55aa66;
 }
 
-#glsl-base-debug .hl-user-struct {
+.glsl-base-debug .hl-user-struct {
   color: #f9bebe;
 }
 
-#glsl-base-debug .hl-primitive-val {
+.glsl-base-debug .hl-primitive-val {
   color: #b900db;
 }

@@ -12,7 +12,7 @@
         <tab-size value="6"></tab-size>
     </glsl-base>
 
-    <script id="fs" source="shader/floor2.fs"  type="xs/fs"></script> 
+    <script id="fs" source="shader/floor.fs"  type="xs/fs"></script> 
     <script id="vs" type="xs/vs">
       // 頂点シェーダには一切手入れする必要なし
       attribute vec3 position;
@@ -46,17 +46,19 @@
     <div id="glsl-base-debug-container">
       <div id="glsl-base-debug-normalizer">+</div>
       <div id="glsl-base-debug-main">
+        <div class="back-wall"></div>
+        
         <div class="top-tabs">
           <ul class="tabs">
-            <li class="file-tab"> vertex.vs </li>
-            <li class="file-tab active-tab"> fragment.fs </li>
+            <li class="file-tab" id='vertex-tab'> vertex.vs </li>
+            <li class="file-tab active-tab" id='fragment-tab'> fragment.fs </li>
           </ul>
           <div class="minimize-btn">-</div>
         </div>
-        <div class="back-wall"></div>
         
-        <div id="glsl-base-debug">
-         
+        <div id="glsl-base-debug-files">
+          <!--<div id="glsl-base-debug">
+          </div>-->
         </div>
       </div>
     </div>
