@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <link rel=stylesheet href="css/glsl-base.css"> 
    
+    <script type="text/javascript" src="js/glsl-review.js"></script>
     <script type="text/javascript" src="js/glsl-base.js"></script>
 
     <!--<script id="vs" source="shader/nothing.vs" type="xs/fs"></script> -->
     <glsl-base>
         <debug value="true"></debug>
         <tab-size value="6"></tab-size>
+        <layout-col value="2"></tab-size>
     </glsl-base>
 
     <script id="fs" source="shader/floor.fs"  type="xs/fs"></script> 
@@ -48,18 +50,22 @@
       <div id="glsl-base-debug-main">
         <div class="back-wall"></div>
         
-        <div class="top-tabs">
-          <ul class="tabs">
-            <li class="file-tab" id='vertex-tab'> vertex.vs </li>
-            <li class="file-tab active-tab" id='fragment-tab'> fragment.fs </li>
-          </ul>
-          <div class="minimize-btn">-</div>
+        <div id="top-btns">
+          <div id='file-btn' class="top-btn">file</div>
+          <div id='tool-btn' class="top-btn">tool</div>
+          <!--<input type="file" id="file-select" name="files[]" multiple />-->
+          <input type="file" id="file-select" name="file" />
+          
+          <div id="minimize-btn">-</div>
+          
         </div>
         
-        <div id="glsl-base-debug-files">
-          <!--<div id="glsl-base-debug">
-          </div>-->
+        <div class="top-tabs">
+          <ul class="tabs" id='tabs-ul'></ul>
         </div>
+        
+        <div id="review-canvas"></div>
+
       </div>
     </div>
 

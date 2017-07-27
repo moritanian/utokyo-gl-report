@@ -1,5 +1,5 @@
 /*
-  # abstraction
+  # abstract
   glsl base script 
   this script is forked from http://qiita.com/doxas/items/000f2ad6f82c27bd389e
 
@@ -25,10 +25,11 @@
 window.onload = function(){
 
      // 変数宣言
-    var a, b, c, d, e, f, g, h, m, l, p, t, u, v, w, x, y, z, dbg, dbgOpt, gebt, vsFileName, fsFileName;
+    var a, b, c, d, e, f, g, h, m, l, p, t, u, v, w, x, y, z;
+    var dbg, dbgOpt, gebt, vsFilePath, fsFilePath, review;
 
-    vsFileName = "vertex.vs";
-    fsFileName = "fragent.fs";
+    vsFilePath = "vertex.vs";
+    fsFilePath = "fragent.fs";
 
     function loadFile(url, data, callback, errorCallback) {
         // Set up an asynchronous request
@@ -82,11 +83,13 @@ window.onload = function(){
         if(vsUrl){
             var s = vsUrl.split('\/');
             vsFileName = s[s.length - 1];
+            vsFilePath = vsUrl;
         }
 
          if(fsUrl){
             var s = fsUrl.split('\/');
             fsFileName = s[s.length - 1];
+            fsFilePath = fsUrl;
         }
         
         reject = function(e){
@@ -147,7 +150,7 @@ window.onload = function(){
     // debug mode
     gebt = function(t){return document.getElementsByTagName(t)};
     dbg = false;
-    dbgOpt = {tab: "\t", eventSetup: false};
+    dbgOpt = {tab: "\t"};
 
     var glsl_base_e = gebt('glsl-base');
     
@@ -179,6 +182,10 @@ window.onload = function(){
                     }
                     
                     break;
+
+                case "LAYOUT-COL":
+                    dbgOpt.layoutCol = ce.getAttribute('value') || 1;
+
             }
         }
     }
@@ -220,7 +227,14 @@ window.onload = function(){
             //if(l){
             if( l || dbg ){
                 
-                addFile(i, j, l);
+                if(!review){
+                    review = new glsl_review(true, dbgOpt);
+                }
+                if(i==0){
+                    review.addFile(fsFilePath, j, l);
+                } else {
+                    review.addFile(vsFilePath, j, l);
+                }
                 console.log(l);
 
             }
@@ -306,510 +320,5 @@ window.onload = function(){
         })();
     }
 
-    var addFile = (function (){
-
-        var highLigts = {
-            'hl-val-type': ['bool', 'int', 'float', 'vec2', 'vec3', 'vec4', 
-              'struct', 'void', 'bvec2', 'bvec3', 'bvec4', 'ivec2', 'ivec3', 
-              'ivec4', 'mat2', 'mat3', 'mat4', 'sampler2D', 'samplerCube',
-              'highp', 'mediump', 'lowp'],
-            'hl-attribute': ['in', 'inout', 'out', 'uniform', 'varying', 'const'],
-            'hl-operator': ['+', '-', '*', '/', '||', '|', '&&', '&', '=', 
-              '<', '>', '<=', '>=', '==', '!'],
-            'hl-bracket' : ['(', ')', '{', '}', '[', ']', ';', '.', ','],
-            'hl-conditional-operator': ['if', 'return', 'else', 'while', 'for'],
-            'hl-builtin-function': ['pow', 'exp', 'sqrt', 'abs', 'sign', 
-              'floor', 'ceil', 'fract', 'mod', 'min', 'max', 'radians', 'degrees',
-              'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 
-              'length', 'distance', 'dot', 'cross', 'normalize', 
-              'equal'],
-            'hl-primitive-val': ['true', 'false']
-        };
-        //var highLightsHash = {'bool' : 'hl-val-type','int' : 'hl-val-type','float' : 'hl-val-type','vec2' : 'hl-val-type','vec3' : 'hl-val-type','vec4' : 'hl-val-type','struct' : 'hl-val-type','void' : 'hl-val-type','bvec2' : 'hl-val-type','bvec3' : 'hl-val-type','bvec4' : 'hl-val-type','ivec2' : 'hl-val-type','ivec3' : 'hl-val-type','ivec4' : 'hl-val-type','mat2' : 'hl-val-type','mat3' : 'hl-val-type','mat4' : 'hl-val-type','sampler2D' : 'hl-val-type','samplerCube' : 'hl-val-type','in' : 'hl-attribute','inout' : 'hl-attribute','out' : 'hl-attribute','uniform' : 'hl-attribute','varying' : 'hl-attribute','+' : 'hl-operator','-' : 'hl-operator','*' : 'hl-operator','/' : 'hl-operator','||' : 'hl-operator','|' : 'hl-operator','&&' : 'hl-operator','&' : 'hl-operator','=' : 'hl-operator','if' : 'hl-operator','return' : 'hl-operator','else' : 'hl-operator','while' : 'hl-operator','for' : 'hl-operator','<' : 'hl-operator','>' : 'hl-operator','<=' : 'hl-operator','>=' : 'hl-operator','==' : 'hl-operator','pow' : 'hl-builtin-function','exp' : 'hl-builtin-function','sqrt' : 'hl-builtin-function','abs' : 'hl-builtin-function','sign' : 'hl-builtin-function','floor' : 'hl-builtin-function','ceil' : 'hl-builtin-function','fract' : 'hl-builtin-function','mod' : 'hl-builtin-function','min' : 'hl-builtin-function','max' : 'hl-builtin-function','radians' : 'hl-builtin-function','degrees' : 'hl-builtin-function','sin' : 'hl-builtin-function','cos' : 'hl-builtin-function','tan' : 'hl-builtin-function','asin' : 'hl-builtin-function','acos' : 'hl-builtin-function','atan' : 'hl-builtin-function','length' : 'hl-builtin-function','distance' : 'hl-builtin-function','dot' : 'hl-builtin-function','cross' : 'hl-builtin-function','normalize' : 'hl-builtin-function','equal' : 'hl-builtin-function'};
-          
-        var highLightsHash = {};
-        for(var h in highLigts){
-            for(var h2 in highLigts[h]){
-                highLightsHash[highLigts[h][h2]] = h;
-            }
-        }
-
-        /*
-        var l = "";
-        for(var i in highLightsHash){
-            l += `'${i}' : '${highLightsHash[i]}',`;
-        }
-          
-          
-        var highLightsHash = {
-
-        }
-        */
-
-        // 単語に分割するための正規表現生成
-        const hlComment = 'hl-comment';
-        const hlSharp = 'hl-sharp';
-        const hlUserStruct = 'hl-user-struct';
-        const hlPrimitiveVal = 'hl-primitive-val';
-
-        function addFile(i, j, l){
-            var errorIndexList = [];
-            var lE0 = b('glsl-base-debug-container');
-            var lEn = b('glsl-base-debug-normalizer');
-            var lEm = b('glsl-base-debug-main');
-            var lEs = b('glsl-base-debug-files');
-            
-            //var lE = b('glsl-base-debug');
-            var lE = document.createElement("div");
-            lE.classList.add('glsl-base-debug');
-
-            lE0.style.display = 'block';
-            //lE.textContent = errorLines;
-
-            var errorLines = l.split('\n');
-            var lines = j.split("\n");
-            var ppe, pe, cp1, cp2, c1, c2;
-              
-            ppe = document.createElement("p");
-            ppe.classList.add('code-line');
-              
-            cp1 = document.createElement("pre");
-            cp1.classList.add('line-number');
-              
-            cp2 = document.createElement("pre");
-            cp2.classList.add('line-content');
-              
-           
-            var userStructs = {};
-
-            function getStructClass(sName){
-                return `hl-${i}-struct-${sName}`;
-            }
-              
-            var patterForLineSplit = (function(){
-
-                const hlSplitTypes = [
-                    'hl-operator',
-                    'hl-bracket'
-                ];
-
-
-                var ex = "(";
-
-                for (var type of hlSplitTypes){
-                    for(var i1 in highLigts[type]){
-                        for(var i2 in highLigts[type][i1]){
-                            ex += "\\" + highLigts[type][i1][i2];
-                        }
-                        ex += "|";
-                    }
-                }
-                
-                ex += " |\t)";
-                
-                return RegExp(ex);
-              
-            })();
-                
-            function getHighLight(word){
-                
-                for(var h of highLigts){
-                    
-                    for(var h2 of highLigts[h]){
-                        
-                        if(h2 === word){
-                            
-                            return h;
-                        
-                        }
-                  
-                    }
-                
-                }
-                
-                return "";
-              
-            }
-
-            function getHighLightFromHash(word){
-              
-                return highLightsHash[word] || "";
-              
-            }
-
-            function getHighLightSpan(word, _class){
-                
-                if(_class instanceof  Array){
-                    _class = _class.join(' ');
-                }
-              
-                return `<span class='${_class}'>${word}</span>`;
-              
-            }
-
-            function highLightOneLine(line, status = {}){
-                
-                var innerHTML = "", comment = "";
-                
-                // #defineとか
-                if(line !== "" && line[0] === "#"){
-                    var es = line.split(" ");
-                    var _class = hlSharp;
-                    if(es[0] === "#define"){
-                        _class = [_class, getStructClass(es[1])];
-                    }
-                    return getHighLightSpan(line, _class);
-                }
-
-                // 複数行コメント
-                var m0 = line.split(/(\/\*|\*\/)/);
-                for(var wi in m0){
-                    var wd = m0[wi];
-                  
-                    if(wd == "")
-                        continue;
-                      
-                    if(wd === "\/\*"){
-                      
-                        status.isComment = true;
-                        comment += wd;
-
-                    } else if(wd == "\*\/"){
-
-                        comment += wd;
-                        status.isComment = false;
-                        innerHTML += getHighLightSpan(comment, hlComment);
-                        comment = "";
-
-                    } else if(status.isComment){
-                        
-                        comment += wd;
-                      
-                    } else if(!status.isComment){
-                      
-                        innerHTML += _highLightOneLine(wd);
-                      
-                    }
-                }
-
-                return innerHTML + (comment !== "" ? getHighLightSpan(comment, hlComment) : "");
-            }
-
-            function _highLightOneLine(line){
-                
-                var comment = "";
-                var m = line.split(/(\/\/)/);
-                var codeline = m[0];
-                
-                // コメントアウトの部分をつなぎ合わせる #TODO もっといい方法ありそう
-                for (id = 1; id < m.length; id++){
-                    comment += m[id];
-                }
-
-                var words = codeline.split(patterForLineSplit);
-
-                return highLightWordsInLine(words, comment);
-            }
-
-            function highLightWordsInLine(words, comment){
-                var isNextStructName = false;
-                var isNextValName = false;
-                var isNumber = false;
-                var integerNum = 0;
-                var  innerHTML = "";
-                
-                for(var wi in words){
-
-                    var word = words[wi];
-                  
-                    if(word === "")
-                        continue;
-                  
-                    // tab
-                    if(word == "\t"){
-                        innerHTML += dbgOpt.tab;
-
-                    } else if(word === " "){
-                  
-                        innerHTML += " ";
-                  
-                    } else {
-                    
-                        // 数値
-                        if(!isNaN(word)){
-
-                            // 小数点以下
-                            if(isNumber){
-                                
-                                innerHTML += getHighLightSpan((`${integerNum}${word}`), hlPrimitiveVal);
-                                isNumber = false;
-                                continue;
-                            
-                            // 整数
-                            } else {
-
-                                isNumber = true;
-                                integerNum = word;
-                                continue;
-                            
-                            }
-
-                        // 数値でない
-                        } else if(isNumber){
-
-                            // 小数点
-                            if(word === "."){
-                            
-                                integerNum += word;
-                                continue;
-                            
-                            // 前の数値終了
-                            } else {
-                                innerHTML += getHighLightSpan(integerNum, hlPrimitiveVal);;
-                                isNumber = false;
-                            }
-
-
-                            
-                        }
-
-                        var hl = getHighLightFromHash (word);
-                        //if(word === 'struct'){
-                        //if(word in highLigts['hl-val-type']){
-                        if(hl == 'hl-val-type' || userStructs[word]){
-                      
-                            if(word === 'struct'){
-                                isNextStructName = true;
-                            }
-
-                            if(userStructs[word]){
-                                hl = [hl, hlUserStruct];
-                            }
-                      
-                            isNextValName = true;
-                        
-                        } else if(isNextValName){
-                        
-
-                            if(isNextStructName){
-                            
-                                isNextStructName = false;
-                                hl = [hl, getStructClass(word), hlUserStruct];
-                                userStructs[word] = true;
-                          
-                            } else {
-                          
-                                hl = [hl, getStructClass(word)];
-                          
-                            }
-
-                            isNextValName = false;
-                        }
-                        
-                        innerHTML += getHighLightSpan(word, hl);
-                      
-                    }
-                }
-
-                if(comment){
-                    innerHTML += getHighLightSpan(comment, hlComment);
-                }
-                    
-                return innerHTML;
-            }
-
-
-            var lastRow = -1;
-            var errRow;
-            var firstErrorLineElement;
-            for(index = 0; index < errorLines.length; index++ ){
-                //var e = errorLines[index].split(' ');
-                var errInfo = errorLines[index].match(/^ERROR:\D+\d+\D+(\d+)\D+$/)
-                
-                if(errInfo && errInfo.length > 1){
-                    
-                    errRow = parseInt(errInfo[1]);
-
-                    if(lastRow == errRow){
-                    
-                        errorIndexList[errorIndexList.length - 1].contents.push(errInfo[0]);
-                    
-                    } else {
-                    
-                        errorIndexList.push({
-                            "row": errRow,
-                            "contents": [errInfo[0]]
-                        });
-                    
-                        lastRow = errRow;
-                
-                    }
-
-                    //console.log(errInfo[1]);
-                    //console.log(errInfo);
-
-                }
-            
-                pe = ppe.cloneNode();
-                pe.textContent = errorLines[index];
-                lE.appendChild(pe);
-            }
-
-            var errHead = 0;
-            var errorNum = errorIndexList.length;
-
-            var errContentElement = document.createElement('div');
-            errContentElement.classList.add('err-content');
-            errContentElement.style.display = 'none';
-            document.body.appendChild(errContentElement);
-
-            var hlStatus = {isComment : false};
-            for(var index = 0; index < lines.length; index++){
-                pe = ppe.cloneNode();
-                c1 = cp1.cloneNode();
-                c2 = cp2.cloneNode();
-                c1.textContent = index + 1;
-
-                c2.innerHTML =  highLightOneLine(lines[index], hlStatus);
-
-                //c2.textContent = lines[index];
-                pe.appendChild(c1);
-                pe.appendChild(c2);
-                
-                if(errorNum > 0  && errorIndexList[errHead]["row"] === index + 1){
-                    pe.classList.add('error-line');
-
-                    (function(){
-                        
-                        var ei = errHead;
-                        
-                        pe.onmouseover = function(e){
-                            errContentElement.textContent = errorIndexList[ei]["contents"][0];
-                            errContentElement.style.left = e.clientX + 40 + "px";
-                            errContentElement.style.top = e.clientY - 40 + "px";
-                            this.classList.add('hover-line');
-                            errContentElement.style.display = 'block';
-                        }
-                    
-                        pe.onmouseout = function(){
-                            errContentElement.style.display = 'none';
-                            this.classList.remove('hover-line');
-                        }
-                    })();
-                  
-                    if(errHead + 1 < errorNum ){
-                        errHead +=1;
-                    }
-                  
-                    if(!firstErrorLineElement){
-                        firstErrorLineElement = pe;
-                    }
-                }
-            
-                lE.appendChild(pe);
-                
-            }
-
-            // error なし
-            if(i== 0){
-                lE.style.display = 'none';
-            }
-
-            var vt = b('vertex-tab');
-            var ft = b('fragment-tab');
-            
-            vt.addEventListener('click', function(){
-                lE.style.display = i==1 ? 'none' : 'block';
-                this.classList.add('active-tab');
-                ft.classList.remove('active-tab');
-            });
-            
-            ft.addEventListener('click', function(){
-                lE.style.display = i == 0 ? 'none' : 'block';
-                this.classList.add('active-tab');
-                vt.classList.remove('active-tab');
-            });
-            
-            lEs.appendChild(lE);
-           
-           
-            var activeWordElem;
-
-            // 宣言へジャンプ機能
-            lE.addEventListener('dblclick', function(e){
-                
-                activeWordElem = null;
-                var elm = document.elementFromPoint(e.clientX, e.clientY);
-                var tgClass = getStructClass(elm.textContent);
-                var cs = document.getElementsByClassName(tgClass);
-                
-                if(cs.length == 0)
-                    return false;
-
-                for(var id=cs.length - 1; id >= 0; id--){
-                    if(cs[id].getBoundingClientRect().top - e.clientY < 0){
-                        activeWordElem = cs[id];
-                        break;
-                    }
-                }
-
-                if(!activeWordElem)
-                    return false;
-                
-                var tp =  activeWordElem.getBoundingClientRect().top - w.innerHeight / 2 ;
-                lE.scrollTop  += tp;
-                //rangeWord(cs[0]);
-                activeWordElem.classList.add('active-word');
-
-                return false;
-            });
-
-            lE.addEventListener('click', function(e){
-                if(activeWordElem){
-                    activeWordElem.classList.remove('active-word');
-                    activeWordElem = null;
-                }
-            });
-
-            // event set
-            if(!dbgOpt.eventSetup){
-
-                vt.textContent = vsFileName;
-                ft.textContent = fsFileName;
-
-                document.getElementsByClassName('minimize-btn')[0].addEventListener('click', function(e){
-                    lEm.style.display = "none";
-                    lEn.style.display = "block";
-                });
-                  
-                lEn.addEventListener('click', function(){
-                    lEm.style.display = "block";
-                    lEn.style.display = "none";
-                });
-
-                dbgOpt.eventSetup = true;
-
-            }
-            
-            // 最初のエラーラインにスクロール
-            (function(){
-                if(!firstErrorLineElement)
-                    return;
-
-                var sc = 0;
-                var top = firstErrorLineElement.getBoundingClientRect().top - w.innerHeight / 2;
-                var st = 0.05;
-                var t = 0.3;
-                
-                (function scrollToErrorLine(){
-                    if(sc < top)
-                        setTimeout(scrollToErrorLine, st * 1000);
-
-                    lE.scrollTop = sc;
-                    sc += top * st / t;
-                })();
-            })();
-        }
-        return addFile;
-    })();
+   
 }
