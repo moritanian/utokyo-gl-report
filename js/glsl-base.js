@@ -230,7 +230,7 @@ window.onload = function(){
                 if(!review){
                     review = new glsl_review(true, dbgOpt);
                 }
-                if(i==0){
+                if(i==1){
                     review.addFile(fsFilePath, j, l);
                 } else {
                     review.addFile(vsFilePath, j, l);

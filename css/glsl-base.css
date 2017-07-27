@@ -32,6 +32,7 @@
 #glsl-base-debug-main {
   height: 100%;
   position: relative;
+  border: solid 1px #6c6a6a;
 }
 
 #glsl-base-debug-main .back-wall {
@@ -50,6 +51,10 @@
   position: relative;
   height: 100%;
   width: 50%;
+}
+
+.glsl-base-debug-files:nth-child(n+2) {
+  border-left: solid 1px #6c6a6a;
 }
 
 .glsl-base-debug-files .glsl-base-debug{
@@ -95,31 +100,40 @@
   cursor: pointer;
 }
 
-#glsl-base-debug-container .top-tabs{
+#glsl-base-debug-container #top-tabs{
   position: relative;
   background-color: rgba(255, 255, 255, 0.03);
   display: flex;
 }
-#glsl-base-debug-container .tabs{
+#glsl-base-debug-container .tabs-ul{
   display: flex;
   margin: 6px 10px 0px;
 
 }
 
-#glsl-base-debug-container .tabs .file-tab {
+#glsl-base-debug-container .tabs-ul .file-tab {
   background-color: rgba(255, 255, 255, 0.1);
   border: solid 0.5px rgba(125, 125, 125, 0.43);
-  padding: 4px 12px;
+  padding: 4px 4px 4px 7px;
   border-radius: 9px 6px 0px 0px / 15px 25px 0px 0px;
   cursor: pointer;
   user-select: none;
 
+  display: flex;
+
 }
 
-#glsl-base-debug-container .tabs .file-tab-close-btn {
-  margin: 2px 2px 2px 10px; 
+#glsl-base-debug-container .tabs-ul .file-tab .file-tab-name {
+  height: 20px;
+}
+
+#glsl-base-debug-container .tabs-ul .file-tab-close-btn {
+  margin: 2px 2px 2px 6px; 
+  /*
   line-height: 5px;
   padding: 0px 4px;
+  */
+  width: 17px;
   text-align: center;
   font-size: 8px;
   border-radius: 7px;
@@ -130,7 +144,7 @@
   background-color: rgba(255, 255, 255, 0.13);
 }
 
-#glsl-base-debug-container .tabs .file-tab.active-tab{
+#glsl-base-debug-container .tabs-ul .file-tab.active-tab{
   background-color: rgba(0, 0, 0, 0.42);
   border: none;
 }

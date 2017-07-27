@@ -96,16 +96,22 @@ var glsl_review = function(isShow = true, option = {}){
 
     //var lEsList = document.getElementsByClassName('glsl-base-debug-files');
     var reviewCanvas = findElementById('review-canvas');
+    var tabAriaParent = findElementById('top-tabs');
     var layoutCol = option.layoutCol || 1;
-    var lEsList = [];
+    var lEsList = []; // ファイルビューエリアのリスト(カラム数の要素)
+    var tabAriaList = []; // tabエリアのリスト(カラム数の要素)
     for(var id=0; id<layoutCol; id++){
         var lEs = createElement('div', `canvas-child-${id}`, ['glsl-base-debug-files']);
-        setStyleElement(lEs, 'width', `${100/layoutCol}%`)
+        setStyleElement(lEs, 'width', `${100/layoutCol}%`);
         lEsList.push(lEs);
         reviewCanvas.appendChild(lEs);
-    } 
 
-    var Tbs = findElementById('tabs-ul');
+        var tabAria = createElement('ul', '', ['tabs-ul']);
+        tabAriaList.push(tabAria);
+        setStyleElement(tabAria, 'width', `${100/layoutCol}%`);
+
+        tabAriaParent.appendChild(tabAria);
+    } 
 
     // top btns
     
@@ -609,8 +615,8 @@ var glsl_review = function(isShow = true, option = {}){
 
         });
 
-
-        Tbs.appendChild(tabElement);
+        tabAriaList[canvasId].appendChild(tabElement);
+        //Tbs.appendChild(tabElement);
 
         changeFileStatus(fileId, status);
 
@@ -699,7 +705,7 @@ var glsl_review = function(isShow = true, option = {}){
         switch(status){
             case FILE_STATUS.SHOW:
                 addClassElement(fileData.tabElement, 'active-tab');
-                showElement(fileData.tabElement);
+                showElement(fileData.tabElement, 'flex');
                 showElement(fileData.viewElement);
                 break;
 
@@ -721,8 +727,8 @@ var glsl_review = function(isShow = true, option = {}){
     }
 
     /* dom操作系 */
-    function showElement(elem){
-        elem.style.display = 'block';
+    function showElement(elem, s = 'block'){
+        elem.style.display = s;             
     }
 
     function hideElement(elem){
