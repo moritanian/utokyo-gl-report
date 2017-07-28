@@ -97,18 +97,120 @@ var glsl_review = function(isShow = true, option = {}){
     //var lEsList = document.getElementsByClassName('glsl-base-debug-files');
     var reviewCanvas = findElementById('review-canvas');
     var tabAriaParent = findElementById('top-tabs');
+    var sepParent = findElementById('separator-parent');
     var layoutCol = option.layoutCol || 1;
+
+    var separatorList = [];
     var lEsList = []; // ファイルビューエリアのリスト(カラム数の要素)
     var tabAriaList = []; // tabエリアのリスト(カラム数の要素)
+
+    var catchupEvent = function(e){
+        console.log(e);
+        return false;
+
+    }
+
+    // drag対策 # TODO ずっとはつどうしたくない
+    document.ondragend = function(){
+        return false;
+    };
+
+    document.ondragstart = function(){
+        return false;
+    };
+    
     for(var id=0; id<layoutCol; id++){
         var lEs = createElement('div', `canvas-child-${id}`, ['glsl-base-debug-files']);
-        setStyleElement(lEs, 'width', `${100/layoutCol}%`);
+        //setStyleElement(lEs, 'width', `${100/layoutCol}%`);
+        //var wid = reviewCanvas.offsetWidth / layoutCol;
+        console.log(reviewCanvas.getBoundingClientRect().left);
+        var wid = 1015.23 / layoutCol;
+        setStyleElement(lEs, 'width', `${wid}px`);
+        
         lEsList.push(lEs);
         reviewCanvas.appendChild(lEs);
 
         var tabAria = createElement('ul', '', ['tabs-ul']);
         tabAriaList.push(tabAria);
-        setStyleElement(tabAria, 'width', `${100/layoutCol}%`);
+        //setStyleElement(tabAria, 'width', `${100/layoutCol}%`);
+        setStyleElement(tabAria, 'width', `${wid}px`);
+
+        if(id < layoutCol - 1){
+          
+            // separaor            
+            (function(canvasId){
+                var separator = createElement('div', '', ['separator']);
+                //setStyleElement(separator, 'left', `${100/layoutCol*(id+1)}%`);
+                setStyleElement(separator, 'left', `${wid * (id+1)}px`);
+                separatorList.push(separator);
+                sepParent.appendChild(separator);
+
+                var mmove = function(e){
+                    var p = (e.clientX - lEsList[canvasId ].getBoundingClientRect().left);
+                    //p = p/reviewCanvas.offsetWidth*100.0;
+                    var p2 =  (lEsList[canvasId +2].getBoundingClientRect().left - e.clientX); // 要計算
+                    //p2 = p2/reviewCanvas.offsetWidth*100.0;
+
+                    var minWid = 20;
+                    if(p < minWid){
+                        p2 -= minWid - p;
+                        p = minWid;
+                        
+                    }
+                    if(p2 < minWid){
+                        p -= minWid - p2;
+                        p2 = minWid;
+                    }
+
+                    //setStyleElement(lEsList[canvasId], 'width', `${p}%`);
+                    setStyleElement(lEsList[canvasId], 'width', `${p}px`);
+                    //setStyleElement(tabAriaList[canvasId], 'width', `${p}%`);
+                    setStyleElement(tabAriaList[canvasId], 'width', `${p}px`);
+                    //setStyleElement(lEsList[canvasId + 1], 'width', `${p2}%`);
+                    setStyleElement(lEsList[canvasId + 1], 'width', `${p2}px`);
+                    //setStyleElement(tabAriaList[canvasId + 1], 'width', `${p2}%`);
+                    setStyleElement(tabAriaList[canvasId + 1], 'width', `${p2}px`);
+                    return false;
+                }
+
+                var mouseup = function(e){
+                    document.removeEventListener('mousemove', mmove, false);
+                    document.removeEventListener('mouseup', mouseup, false);
+                    setStyleElement(separator, 'left', `${e.clientX - reviewCanvas.getBoundingClientRect().left - 2}px`);
+                    setStyleElement(reviewCanvas, 'cursor', '');
+                    console.log('mouseup');
+                    removeClassElement(reviewCanvas, 'no-user-select');
+
+
+                    /*
+                     これはうまくいかない
+                     // drag対策
+                    document.removeEventListener('dragstart', catchupEvent, true);
+                    document.removeEventListener('dragend', catchupEvent, true);
+                    */
+                    return true;
+                }
+                
+
+                separator.addEventListener('mousedown', function(e){
+                     /*
+                     // drag対策
+                    // これはうまくいかない
+                    document.addEventListener('dragstart', catchupEvent, true);
+                    document.addEventListener('dragend', catchupEvent, true);
+                        */
+                    console.log('mousedwon');
+
+                    document.addEventListener('mousemove', mmove, false);
+                    document.addEventListener('mouseup', mouseup, false);
+                    setStyleElement(reviewCanvas, 'cursor', 'e-resize');
+                    addClassElement(reviewCanvas, 'no-user-select');
+                   
+                });
+
+            })(id);
+
+        }
 
         tabAriaParent.appendChild(tabAria);
     } 
@@ -193,7 +295,14 @@ var glsl_review = function(isShow = true, option = {}){
     });
 
         
-    // doms
+    // needed dialog elements
+    var errContentElement = createElement('div', '', ['err-content']);
+    hideElement(errContentElement);
+    document.body.appendChild(errContentElement);
+
+    var pathIndicatorDialog = createElement('div', '', ['path-indicator-dialog']);
+    hideElement(pathIndicatorDialog);
+    document.body.appendChild(pathIndicatorDialog);
 
     // i: number, j: lines, l: log
     //this.addFile = function(i, j, l){
@@ -253,10 +362,6 @@ var glsl_review = function(isShow = true, option = {}){
         var errHead = 0;
         var errorNum = errorIndexList.length;
 
-        var errContentElement = createElement('div', '', ['err-content']);
-        hideElement(errContentElement);
-        document.body.appendChild(errContentElement);
-
         var hlStatus = {isComment : false};
         for(var index = 0; index < lines.length; index++){
             pe = ppe.cloneNode();
@@ -282,7 +387,7 @@ var glsl_review = function(isShow = true, option = {}){
                         errContentElement.style.left = e.clientX + 40 + "px";
                         errContentElement.style.top = e.clientY - 40 + "px";
                         this.classList.add('hover-line');
-                        errContentElement.style.display = 'block';
+                        showElement(errContentElement);
                     }
                 
                     pe.onmouseout = function(){
@@ -587,9 +692,32 @@ var glsl_review = function(isShow = true, option = {}){
         //var tabId = `${fileName.split(/\./)[0]}-`
         var tabElement = createElement('li', '', ['file-tab']);
         
+        // tab-name element
         var tabC1 = createElement('span', '', ['file-tab-name']);
         tabC1.textContent = fileName;
         
+        // hover 時にpath名表示
+        
+        (function setPathIndicatorListener(tab){
+            isHovering = false;
+            var requiredHoveringTime = 1000;
+            tab.onmouseover = function(e){
+                isHovering = true;
+                setTimeout(function(){
+                    if(isHovering){
+                        setPositionElement(pathIndicatorDialog, e.clientX + 30, e.clientY);
+                        pathIndicatorDialog.textContent = path;
+                        showElement(pathIndicatorDialog);
+                    }
+                }, requiredHoveringTime);
+            }
+
+            tab.onmouseout = function(e){
+                isHovering = false; 
+                hideElement(pathIndicatorDialog);            
+            }
+        })(tabC1);
+        // tab close element
         var tabC2 = createElement('span', '', ['file-tab-close-btn']);
         tabC2.textContent = '×';
 
@@ -737,6 +865,11 @@ var glsl_review = function(isShow = true, option = {}){
 
     function setStyleElement(elem, s1, s2){
         elem.style[s1] = s2;
+    }
+
+    function setPositionElement(elem, x, y){
+        setStyleElement(elem, 'left', `${x}px`);
+        setStyleElement(elem, 'top', `${y}px`);
     }
 
     function addClassElement(elem, _class){
