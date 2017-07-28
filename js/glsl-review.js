@@ -120,11 +120,11 @@ var glsl_review = function(isShow = true, option = {}){
     };
     
     for(var id=0; id<layoutCol; id++){
+
         var lEs = createElement('div', `canvas-child-${id}`, ['glsl-base-debug-files']);
-        //setStyleElement(lEs, 'width', `${100/layoutCol}%`);
-        //var wid = reviewCanvas.offsetWidth / layoutCol;
-        console.log(reviewCanvas.getBoundingClientRect().left);
-        var wid = 1015.23 / layoutCol;
+
+        // # TODO 外側の margin-left + margin-right = 20 計算でだしたい 
+        var wid = (window.innerWidth - 20) / layoutCol; 
         setStyleElement(lEs, 'width', `${wid}px`);
         
         lEsList.push(lEs);
@@ -148,7 +148,10 @@ var glsl_review = function(isShow = true, option = {}){
                 var mmove = function(e){
                     var p = (e.clientX - lEsList[canvasId ].getBoundingClientRect().left);
                     //p = p/reviewCanvas.offsetWidth*100.0;
-                    var p2 =  (lEsList[canvasId +2].getBoundingClientRect().left - e.clientX); // 要計算
+                    if(canvasId == layoutCol -2)
+                        var p2 =  (reviewCanvas.getBoundingClientRect().left + reviewCanvas.offsetWidth - e.clientX); // 要計算
+                    else
+                        var p2 =  (lEsList[canvasId +2].getBoundingClientRect().left - e.clientX); // 要計算
                     //p2 = p2/reviewCanvas.offsetWidth*100.0;
 
                     var minWid = 20;
@@ -176,7 +179,8 @@ var glsl_review = function(isShow = true, option = {}){
                 var mouseup = function(e){
                     document.removeEventListener('mousemove', mmove, false);
                     document.removeEventListener('mouseup', mouseup, false);
-                    setStyleElement(separator, 'left', `${e.clientX - reviewCanvas.getBoundingClientRect().left - 2}px`);
+                    //setStyleElement(separator, 'left', `${e.clientX - reviewCanvas.getBoundingClientRect().left - 2}px`);
+                    setStyleElement(separator, 'left', `${lEsList[canvasId+1].getBoundingClientRect().left - reviewCanvas.getBoundingClientRect().left - 2}px`);
                     setStyleElement(reviewCanvas, 'cursor', '');
                     console.log('mouseup');
                     removeClassElement(reviewCanvas, 'no-user-select');
@@ -228,19 +232,24 @@ var glsl_review = function(isShow = true, option = {}){
     */
 
     var fselect = findElementById('file-select');
+
     fselect.onmouseover = function(){
         console.log('hover');
         addClassElement(fileBtn, 'hover');
     };
+
     fselect.onmouseout = function(){
         removeClassElement(fileBtn, 'hover');
     }
+
     fselect.addEventListener('click', function(evt){
         console.log('click fselect');
         console.log(evt);
         return true;
     });
+
     fselect.addEventListener('change', function(evt){
+
         var files = evt.target.files; // FileList object
 
         for (var i = 0, f; f = files[i]; i++) {
@@ -251,7 +260,9 @@ var glsl_review = function(isShow = true, option = {}){
 
             // Closure to capture the file information.
             reader.onload = (function(theFile) {
+
                 if(isImage){
+
                     return function(e) {
                         // Render thumbnail.
                         var span = document.createElement('span');
@@ -260,7 +271,9 @@ var glsl_review = function(isShow = true, option = {}){
                                         '" title="', escape(theFile.name), '"/>'].join('');
                         addFileAndtab(theFile.name, elem);
                     };
+
                 } else {
+
                     return function(e){
                         Instance.addFile(theFile.name, e.target.result);
                         //addFileAndtab(theFile.name, elem);
@@ -697,7 +710,6 @@ var glsl_review = function(isShow = true, option = {}){
         tabC1.textContent = fileName;
         
         // hover 時にpath名表示
-        
         (function setPathIndicatorListener(tab){
             isHovering = false;
             var requiredHoveringTime = 1000;
