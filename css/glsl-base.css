@@ -81,6 +81,7 @@
 
 #glsl-base-debug-container .tabs-ul{
   display: flex;
+  height: 34px;
   /*padding: 6px 10px 0px;*/
 
 }
@@ -89,7 +90,9 @@
   border-left: solid 1px #6c6a6a;
 }
 
-#glsl-base-debug-container .tabs-ul .file-tab {
+#glsl-base-debug-container .tabs-ul .file-tab,
+#glsl-base-debug-container .file-tab.dragging-tab { 
+
   background-color: rgba(255, 255, 255, 0.1);
   border: solid 0.5px rgba(125, 125, 125, 0.43);
   padding: 4px 4px 4px 7px;
@@ -100,6 +103,11 @@
 
   display: flex;
 
+}
+
+#glsl-base-debug-container .file-tab.dragging-tab { 
+  position: absolute;
+  background-color: rgba(25, 25, 25, 0.9);
 }
 
 #glsl-base-debug-container .tabs-ul .file-tab:nth-child(1) {
@@ -210,6 +218,10 @@
 .glsl-base-debug .code-line {
     overflow: hidden;
     display: table-row-group;
+
+    height: 15px;
+   /* display: flow-root;
+    display: contents;*/
 }
 
 .glsl-base-debug .line-content {
@@ -225,6 +237,26 @@
   line-height: 14px;
 }
 
+/*
+.glsl-base-debug .code-line:nth-child(n+50) .line-content,
+.glsl-base-debug .code-line:nth-child(n+50) .line-number {
+  display: none;
+}
+*/
+.glsl-base-debug.scroll-performance .code-line{
+  display: flow-root;
+
+}
+
+.glsl-base-debug.scroll-performance .code-line .line-content,
+.glsl-base-debug.scroll-performance .code-line .line-number {
+  display: none;
+}
+
+.glsl-base-debug.scroll-performance .code-line.show .line-content,
+.glsl-base-debug.scroll-performance .code-line.show .line-number {
+  display: flow-root;
+}
 
 
 .glsl-base-debug .error-line {
@@ -303,3 +335,38 @@
 .no-scroll {
   overflow: hidden;
 }
+
+.cursor {
+  position: absolute;
+  width: 1px;
+  height: 12px;
+  background-color: white;
+  top: 20px;
+  left: 50px;
+}
+
+/* 点滅 */
+.blinking{
+    -webkit-animation:blink 0.5s ease-in-out infinite alternate;
+    -moz-animation:blink 0.5s ease-in-out infinite alternate;
+    animation:blink 0.5s ease-in-out infinite alternate;
+}
+@-webkit-keyframes blink{
+  0% {opacity:0;}
+  40% {opacity:0;}
+  60% {opacity:1;}
+  100% {opacity:1;}
+}
+@-moz-keyframes blink{
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+@keyframes blink{
+    0% {opacity:0;}
+    50% {opacity:0;}
+    51% {opacity:1;}
+    100% {opacity:1;}
+}
+
+
+

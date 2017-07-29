@@ -11,10 +11,10 @@
     <glsl-base>
         <debug value="true"></debug>
         <tab-size value="4"></tab-size>
-        <layout-col value="4"></tab-size>
+        <layout-col value="2"></tab-size>
     </glsl-base>
 
-    <script id="fs" source="shader/floor.fs"  type="xs/fs"></script> 
+    <script id="fs" source="shader/floor3.fs"  type="xs/fs"></script> 
     <script id="vs" type="xs/vs">
       // 頂点シェーダには一切手入れする必要なし
       attribute vec3 position;
@@ -65,6 +65,7 @@
         <div id='canvas-field'>
           <div id="review-canvas"></div>
           <div id='separator-parent'></div>
+          <div class="cursor blinking" id="cursor"></div>
         </div>
 
 

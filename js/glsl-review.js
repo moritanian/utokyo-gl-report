@@ -90,19 +90,30 @@ var glsl_review = function(isShow = true, option = {}){
     })();
 
 
-    var lE0 = findElementById('glsl-base-debug-container');
-    var lEn = findElementById('glsl-base-debug-normalizer');
-    var lEm = findElementById('glsl-base-debug-main');
+    var lE0 = getElementById('glsl-base-debug-container');
+    var lEn = getElementById('glsl-base-debug-normalizer');
+    var lEm = getElementById('glsl-base-debug-main');
 
     //var lEsList = document.getElementsByClassName('glsl-base-debug-files');
-    var reviewCanvas = findElementById('review-canvas');
-    var tabAriaParent = findElementById('top-tabs');
-    var sepParent = findElementById('separator-parent');
+    var reviewCanvas = getElementById('review-canvas');
+    var tabAriaParent = getElementById('top-tabs');
+    var topBtnParent = getElementById('top-btns');
+    var sepParent = getElementById('separator-parent');
     var layoutCol = option.layoutCol || 1;
 
     var separatorList = [];
     var lEsList = []; // ファイルビューエリアのリスト(カラム数の要素)
     var tabAriaList = []; // tabエリアのリスト(カラム数の要素)
+
+    var styleData = {
+        "container": {},
+        "topBtns" : {},
+        "topTbs" : {},
+        "reviewCanvas": {}
+    };
+
+    var cursorElement, cursorX, cursorY;
+    setCursorListener();
 
     var catchupEvent = function(e){
         console.log(e);
@@ -149,7 +160,7 @@ var glsl_review = function(isShow = true, option = {}){
                     var p = (e.clientX - lEsList[canvasId ].getBoundingClientRect().left);
                     //p = p/reviewCanvas.offsetWidth*100.0;
                     if(canvasId == layoutCol -2)
-                        var p2 =  (reviewCanvas.getBoundingClientRect().left + reviewCanvas.offsetWidth - e.clientX); // 要計算
+                        var p2 =  (styleData.reviewCanvas.left + reviewCanvas.offsetWidth - e.clientX); // 要計算
                     else
                         var p2 =  (lEsList[canvasId +2].getBoundingClientRect().left - e.clientX); // 要計算
                     //p2 = p2/reviewCanvas.offsetWidth*100.0;
@@ -180,9 +191,8 @@ var glsl_review = function(isShow = true, option = {}){
                     document.removeEventListener('mousemove', mmove, false);
                     document.removeEventListener('mouseup', mouseup, false);
                     //setStyleElement(separator, 'left', `${e.clientX - reviewCanvas.getBoundingClientRect().left - 2}px`);
-                    setStyleElement(separator, 'left', `${lEsList[canvasId+1].getBoundingClientRect().left - reviewCanvas.getBoundingClientRect().left - 2}px`);
+                    setStyleElement(separator, 'left', `${lEsList[canvasId+1].getBoundingClientRect().left - styleData.reviewCanvas.left - 2}px`);
                     setStyleElement(reviewCanvas, 'cursor', '');
-                    console.log('mouseup');
                     removeClassElement(reviewCanvas, 'no-user-select');
 
 
@@ -203,7 +213,6 @@ var glsl_review = function(isShow = true, option = {}){
                     document.addEventListener('dragstart', catchupEvent, true);
                     document.addEventListener('dragend', catchupEvent, true);
                         */
-                    console.log('mousedwon');
 
                     document.addEventListener('mousemove', mmove, false);
                     document.addEventListener('mouseup', mouseup, false);
@@ -219,9 +228,21 @@ var glsl_review = function(isShow = true, option = {}){
         tabAriaParent.appendChild(tabAria);
     } 
 
+    showElement(lE0);
+    getStyleData();
+    console.log(styleData);
+
+    if(isShow)
+        showElement(lE0);
+    else
+        hideElement(lE0);
+
+
+
+
     // top btns
     
-    var fileBtn = findElementById('file-btn');
+    var fileBtn = getElementById('file-btn');
     /*
     fileBtn.addEventListener('click', function(){
         console.log('fileBtn');
@@ -231,10 +252,9 @@ var glsl_review = function(isShow = true, option = {}){
     });
     */
 
-    var fselect = findElementById('file-select');
+    var fselect = getElementById('file-select');
 
     fselect.onmouseover = function(){
-        console.log('hover');
         addClassElement(fileBtn, 'hover');
     };
 
@@ -242,11 +262,10 @@ var glsl_review = function(isShow = true, option = {}){
         removeClassElement(fileBtn, 'hover');
     }
 
+    /*
     fselect.addEventListener('click', function(evt){
-        console.log('click fselect');
-        console.log(evt);
         return true;
-    });
+    });*/
 
     fselect.addEventListener('change', function(evt){
 
@@ -292,12 +311,7 @@ var glsl_review = function(isShow = true, option = {}){
         }
     }, false);
 
-    if(isShow)
-        showElement(lE0);
-    else
-        hideElement(lE0);
-
-    findElementById('minimize-btn').addEventListener('click', function(e){
+    getElementById('minimize-btn').addEventListener('click', function(e){
         hideElement(lEm);
         showElement(lEn);
     });
@@ -421,7 +435,10 @@ var glsl_review = function(isShow = true, option = {}){
             lE.appendChild(pe);
             
         }
-        
+
+        // スクロール性能向上
+        scrollPerformance(lE);
+
         var fileId = addFileAndtab(filePath, lE);
        
         var activeWordElem;
@@ -708,14 +725,27 @@ var glsl_review = function(isShow = true, option = {}){
         // tab-name element
         var tabC1 = createElement('span', '', ['file-tab-name']);
         tabC1.textContent = fileName;
+
+          // tab close element
+        var tabC2 = createElement('span', '', ['file-tab-close-btn']);
+        tabC2.textContent = '×';
+
+        tabElement.appendChild(tabC1);
+        tabElement.appendChild(tabC2);
+
+        var fileId = addFileList(fileName, path, tabElement, viewElement, status, canvasId);
         
         // hover 時にpath名表示
-        (function setPathIndicatorListener(tab){
-            isHovering = false;
+        (function setPathIndicatorListener(tab, tabElement){
+            var isHovering = false;
             var requiredHoveringTime = 1000;
             tab.onmouseover = function(e){
                 isHovering = true;
                 setTimeout(function(){
+                    if(hasClassElement(tabElement, 'dragging-tab')){
+                        isHovering = false;
+                        return;
+                    }
                     if(isHovering){
                         setPositionElement(pathIndicatorDialog, e.clientX + 30, e.clientY);
                         pathIndicatorDialog.textContent = path;
@@ -728,17 +758,69 @@ var glsl_review = function(isShow = true, option = {}){
                 isHovering = false; 
                 hideElement(pathIndicatorDialog);            
             }
-        })(tabC1);
-        // tab close element
-        var tabC2 = createElement('span', '', ['file-tab-close-btn']);
-        tabC2.textContent = '×';
+        })(tabC1, tabElement);
 
-        tabElement.appendChild(tabC1);
-        tabElement.appendChild(tabC2);
+        // ドラッグ
+        (function setDragTabListener(tabC, tabElement, tabParent){
 
-        var fileId = addFileList(fileName, path, tabElement, viewElement, status, canvasId);
+            var isDragging = false;
+            var tabDragOffsetTop = 0;
+            var tabDragOffsetLeft = 0;
+            
+            function tabDrag(e){
+                
+                if(!isDragging ){
+
+                    tabParent.removeChild(tabElement);
+                    lEm.appendChild(tabElement); 
+
+                    isDragging = true;
+                    
+                    addClassElement(tabElement, 'dragging-tab');
+                    addClassElement(reviewCanvas, 'no-user-select');
+
+                }
+
+                setPositionElement(tabElement, 
+                    e.clientX - styleData.container.left - tabDragOffsetLeft, 
+                    e.clientY - styleData.container.top - tabDragOffsetTop);
+            }
+
+            function tabDragEnd(e){
+                document.removeEventListener('mousemove', tabDrag, false);
+                document.removeEventListener('mouseup', tabDragEnd, false);
+
+                if(!isDragging)
+                    return false;
+
+                isDragging = false;
+
+                removeClassElement(reviewCanvas, 'no-user-select');
+                removeClassElement(tabElement, 'dragging-tab');
+                lEm.removeChild(tabElement);
+                tabParent.appendChild(tabElement);
+                // 別タブ
+                if(e.offsetY - styleData.topBtns.height > 0){
+                    window.open(location.href + '?a=3', 'sasacas, "resizable=no,scrollbars=yes,status=no"');
+                    changeFileStatus(fileId, FILE_STATUS.CLOSE);
+                } else {
+
+                }
+            }
+
+            tabC.addEventListener('mousedown', function(e){
+                
+                document.addEventListener('mousemove', tabDrag, false);
+                document.addEventListener('mouseup', tabDragEnd, false);
+
+                tabDragOffsetLeft = e.offsetX; 
+                tabDragOffsetTop = e.offsetY + 7; 
+            });
 
 
+        })(tabC1, tabElement, tabAriaList[canvasId], fileId);
+
+      
         // file close
         tabC2.addEventListener('click', function(){
             console.log(fileId);
@@ -866,6 +948,184 @@ var glsl_review = function(isShow = true, option = {}){
 
     }
 
+    /* cursor */
+    function setCursorListener(){
+        cursorX = 20;
+        cursorY = 20;
+        cursorElement = getElementById('cursor');
+        var fontVSpan = 14; // Y
+        var fontHolSpan = 6; // X
+
+        // key inputs # TODO pcのみにしたい
+        document.addEventListener("keydown", function( event ) {
+            switch( event.keyCode ) {
+                // left
+                case 37:
+                case 65:
+                    cursorX -= fontHolSpan;
+                    break;
+                 // right
+                case 39:
+                case 68:
+                    cursorX += fontHolSpan;
+                  break;
+                // up
+                case 38:
+                case 87:
+                    cursorY -= fontVSpan;
+                  break;
+                // down
+                case 40:
+                case 83:
+                    cursorY += fontVSpan;
+                  break;
+                // space
+                case 32:
+                    break;
+            }
+            removeClassElement(cursorElement, 'blinking');
+            setPositionElement(cursorElement, cursorX, cursorY);
+            addClassElement(cursorElement, 'blinking');
+            return false;
+        });
+    }
+
+    /* scroll パフォーマンス向上
+        画面上のみ表示する
+        これにより600行のスクリプトの update layer tree の1サイクルあたりの時間が
+        200ms から　50ms ほどに改善
+        # TODO 自動スクロールが利かなくなった
+        # TODO 幅方向のスクロール
+     */
+    function scrollPerformance(lE){
+        //return;
+        var ticking = false, allShowState = 0;
+        var lEchildrenLength = lE.childNodes.length;
+        var showLineNum = 40;
+        
+        //addClassElement(lE, 'scroll-performance');
+        var start = 0;
+        var end = showLineNum;
+
+        var maxId = showLineNum < lEchildrenLength ? showLineNum : lEchildrenLength;
+        for(var id=0; id < maxId; id++){
+            addClassElement(lE.childNodes[id], 'show');
+        }
+        
+        lE.addEventListener('scroll', function(e) {
+          var sY = lE.scrollTop;
+            if (!ticking) {
+                addClassElement(lE, 'scroll-performance');
+
+                /*
+                if(allShowState == 0){
+                    
+                    function check(){
+                        if(allShowState == 1){
+                            removeClassElement(lE, 'scroll-performance');
+                            allShowState = 0;
+                        } else if(allShowState == 2){
+                            allShowState = 1;
+                            setTimeout(check, 500);
+                        }
+                    }
+                    allShowState = 2;
+                    check();
+
+                } else if(allShowState == 1){
+                    allShowState = 2;
+                }
+*/
+                window.requestAnimationFrame(function() {
+                    //removeClassElement(lE, 'scroll-performance');
+
+                    ticking = false;
+
+                    //console.log(sY);
+                    var startId = Math.ceil(sY / 15) - 1 ;
+                    if(startId < 0)
+                        startId = 0;
+                    
+                    var endId = startId + showLineNum;
+                    if(endId > lEchildrenLength )
+                        endId = lEchildrenLength;
+
+                    if(start == startId && endId == end)
+                        return;
+                    
+                   // console.log(startId + ' ' + endId + ' ' + start + ' ' + end);
+                    var minId = start > startId ? startId : start;
+                    var maxId = end > endId ? end : endId;
+
+                    for(var id = minId; id< maxId; id++){
+                        var child = lE.childNodes[id];
+                        //if(!child)
+                        //    continue;
+                        var action = 0;
+                        if(end <= startId){
+                            if(startId <= id && id < endId )
+                                action = 1;
+                            else if(start <= id && id < end)
+                                action = -1;
+                        } else if(endId <= start){
+                            if(startId <= id && id < endId)
+                                action = 1;
+                            else if(start <= id && id < end)
+                                action = -1;
+
+                        } else if(startId <= id && id < start) {
+                            action = 1;
+                        } else if (end <= id && id < endId) {
+                            action = 1;
+                        } else if (start <= id && id < startId) {
+                            action = -1;
+                        } else if(endId <= id && id < end ) {
+                            action = -1;
+                        }
+                        if(action == 1)
+                            addClassElement(lE.childNodes[id], 'show');
+                        else if(action == -1)
+                            removeClassElement(lE.childNodes[id], 'show');
+                    }
+
+                    start = startId;
+                    end = endId;
+
+                });
+            }
+            ticking = true;
+
+            return true;
+        });
+        
+    }
+
+    /* スタイルデータ取得 */
+    function getStyleData () {
+
+        var containerStyle = lE0.getBoundingClientRect();
+        styleData["container"] = {
+            'left' : containerStyle.left,
+            'top': containerStyle.top
+        };
+
+
+        styleData['topBtns'] = {
+            'width': topBtnParent.offsetWidth,
+            'height': topBtnParent.offsetHeight
+        };
+
+        styleData['topTbs'] = {
+
+        };
+
+        var reviewCanvasStyle = reviewCanvas.getBoundingClientRect();
+        styleData['reviewCanvas'] = {
+            'left': reviewCanvasStyle.left,
+            'width': reviewCanvas.offsetWidth
+        };
+    }
+
     /* dom操作系 */
     function showElement(elem, s = 'block'){
         elem.style.display = s;             
@@ -896,7 +1156,7 @@ var glsl_review = function(isShow = true, option = {}){
         elem.setAttribute('id', id);
     }
 
-    function findElementById(id){
+    function getElementById(id){
         return document.getElementById(id);
     }
 
@@ -910,6 +1170,10 @@ var glsl_review = function(isShow = true, option = {}){
         }
 
         return elem;
+    }
+
+    function hasClassElement (elem, _class){
+        return elem.classList.contains(_class);
     }
 
 }
