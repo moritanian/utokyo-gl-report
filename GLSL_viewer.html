@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel=stylesheet href="css/glsl-base.css"> 
+   
+    <script type="text/javascript" src="js/glsl-review.js"></script>
+
+    <!--<script id="vs" source="shader/nothing.vs" type="xs/fs"></script> -->
+    <glsl-base>
+        <debug value="true"></debug>
+        <tab-size value="4"></tab-size>
+        <layout-col value="2"></layout-col>
+    </glsl-base>
+
+
+    <style>
+      /* ウィンドウ全体にcanvasをぴったり配置するためのStyle */
+      * {
+        margin:0;
+        padding:0;
+        overflow:hidden;
+      }
+      html,body{
+        height:100%;
+        background-color: black;
+      }
+      .back-wall {
+        background-image: url(img/Character01_Vis01.png);
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
+    </style>
+    <title>GLSL VIEWER</title>
+
+    <script>
+      window.onload = function(){
+
+        var dbgOpt = {tab: "\t", winName: window.name};
+        
+
+        var glsl_base_e = document.getElementsByTagName('glsl-base');
+    
+        if(glsl_base_e && glsl_base_e.length > 0){
+        
+          var children = glsl_base_e[0].childNodes;
+          
+          for(var i=0; i<children.length; i++){
+          
+            if(i%2 == 0)
+                  continue;
+          
+            var ce = children[i];
+        
+            switch(ce.tagName){
+              
+              case "DEBUG":
+                dbg = ce.getAttribute('value') === "true";
+                break;
+
+              case "TAB-SIZE":
+
+                var tabSize = parseInt(ce.getAttribute('value')); 
+                dbgOpt.tabSize = tabSize;
+                dbgOpt.tab = "";
+
+                for(var id=0; id < tabSize; id++){
+                  dbgOpt.tab += " ";
+                }
+                  
+                break;
+
+                case "LAYOUT-COL":
+                  dbgOpt.layoutCol = ce.getAttribute('value') || 1;
+
+            }
+          }
+        }
+
+        var review = new glsl_review(true, dbgOpt);
+        if(!dbgOpt.winName)
+          review.recoverLastView();
+
+      }
+    </script>
+  
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="glsl-base-debug-container">
+      <div id="glsl-base-debug-normalizer">+</div>
+      <div id="glsl-base-debug-main">
+        <div class="back-wall"></div>
+        
+        <div id="top-btns">
+          <div id='file-btn' class="top-btn">file</div>
+          <div id='tool-btn' class="top-btn">tool</div>
+          <!--<input type="file" id="file-select" name="files[]" multiple />-->
+          <input type="file" id="file-select" name="file" />
+          
+          <div id="minimize-btn">-</div>
+
+        </div>
+        
+        <div id="top-tabs"></div>
+        
+        <div id='canvas-field'>
+          <div id="review-canvas"></div>
+          <div id='separator-parent'></div>
+          <div class="cursor blinking" id="cursor"></div>
+        </div>
+
+
+      </div>
+    </div>
+
+  </body>
+</html>

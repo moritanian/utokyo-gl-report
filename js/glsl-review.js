@@ -1,3 +1,16 @@
+/*
+    ファイルreview機能
+
+    # TODO
+    - リサイズ
+    - tab移動
+    - 新規ウィンドウ
+
+    canvasFiledの子要素の幅をリストで保持するようにする
+    そのデータをもとにリサイズ、tab移動機能実装予定
+
+*/
+
 var glsl_review = function(isShow = true, option = {}){
 
     /*
@@ -5,11 +18,55 @@ var glsl_review = function(isShow = true, option = {}){
         path
         tabElement
         viewElement
-        status : 
+        status :
+        fileId 
     */
 
     var Instance = this;
     var fileList = [];
+
+    var IS_SCROLL_PERFORMANCE_UP = true;
+
+      /* strage access */
+    var viewStorage = {
+        getNewWinName: function(){
+            return 'newWinName'; // # TODO unique or strageで管理
+        },
+
+        setFileData: function(filePath, fileId, content, err){
+            this._setObj(`file-${fileId}`, {content: content, type: 'text', err: err, filePath: filePath});
+
+        },
+
+        getFileData: function(fileId) {
+            return this._getObj(`file-${fileId}`);
+        },
+
+        setOpenWinData: function(fileIds, winName){
+            this._setObj(`win-data-${winName}`, {fileIds: fileIds});
+        },
+
+        getOpenWinData: function(winName){
+            var winData = this._getObj(`win-data-${winName}`);
+            return winData;
+        },
+
+        setLastViewData: function(){
+            this._setObj('lastViewData', {fileList: fileList});
+        },
+
+        getLastViewData: function(){
+            return this._getObj('lastViewData');
+        },
+
+        _setObj: function(key, obj){
+            localStorage.setItem(key, (JSON.stringify(obj)));
+        },
+
+        _getObj: function(key){
+            return JSON.parse(localStorage.getItem(key));
+        }
+    };
     
     var userStructs = {};
 
@@ -230,7 +287,6 @@ var glsl_review = function(isShow = true, option = {}){
 
     showElement(lE0);
     getStyleData();
-    console.log(styleData);
 
     if(isShow)
         showElement(lE0);
@@ -284,11 +340,8 @@ var glsl_review = function(isShow = true, option = {}){
 
                     return function(e) {
                         // Render thumbnail.
-                        var span = document.createElement('span');
-                        var elem = createElement('div', '', ['glsl-base-debug']);
-                        elem.innerHTML = ['<img class="thumb" src="', e.target.result,
-                                        '" title="', escape(theFile.name), '"/>'].join('');
-                        addFileAndtab(theFile.name, elem);
+                        Instance.addImageFile(theFile.name, e.target.result);
+
                     };
 
                 } else {
@@ -333,11 +386,14 @@ var glsl_review = function(isShow = true, option = {}){
 
     // i: number, j: lines, l: log
     //this.addFile = function(i, j, l){
-    this.addFile = function(filePath, j, l = ""){
+    this.addFile = function(filePath, j, l = "", isStorageSave = true){
 
         var fileId = getNextFileId();
 
         var errorIndexList = [];
+
+        if(isStorageSave)
+            viewStorage.setFileData(filePath, fileId, j, l);
        
         //var lE = b('glsl-base-debug');
         var lE = createElement('div', '', ['glsl-base-debug'])
@@ -437,7 +493,8 @@ var glsl_review = function(isShow = true, option = {}){
         }
 
         // スクロール性能向上
-        scrollPerformance(lE);
+        if(IS_SCROLL_PERFORMANCE_UP)
+            scrollPerformance(lE);
 
         var fileId = addFileAndtab(filePath, lE);
        
@@ -451,20 +508,33 @@ var glsl_review = function(isShow = true, option = {}){
             var tgClass = getStructClass(elm.textContent, fileId);
             var cs = document.getElementsByClassName(tgClass);
             
+            var wordElemTop;
+            
             if(cs.length == 0)
                 return false;
 
+            if(IS_SCROLL_PERFORMANCE_UP)
+                removeClassElement(lE, 'scroll-performance');
+
             for(var id=cs.length - 1; id >= 0; id--){
-                if(cs[id].getBoundingClientRect().top - e.clientY < 0){
+
+                wordElemTop = cs[id].getBoundingClientRect().top;
+                if(wordElemTop - e.clientY < 0){
                     activeWordElem = cs[id];
                     break;
                 }
             }
 
+            if(IS_SCROLL_PERFORMANCE_UP){
+                addClassElement(lE, 'scroll-performance');
+            }
+               
+
             if(!activeWordElem)
                 return false;
             
-            var tp =  activeWordElem.getBoundingClientRect().top - window.innerHeight / 2 ;
+            var tp =  wordElemTop - window.innerHeight / 2 ;
+
             lE.scrollTop  += tp;
             //rangeWord(cs[0]);
             activeWordElem.classList.add('active-word');
@@ -500,6 +570,68 @@ var glsl_review = function(isShow = true, option = {}){
 
         return fileId;
     }
+
+    this.addImageFile = function(filePath, fileData, isStorageSave = true){
+        var span = document.createElement('span');
+        var elem = createElement('div', '', ['glsl-base-debug']);
+        elem.innerHTML = ['<img class="thumb" src="', fileData,
+                                        '" title="', escape(filePath), '"/>'].join('');
+        var fileId = addFileAndtab(filePath, elem);
+
+        if(isStorageSave)
+            viewStorage.setFileData(filePath, fileId, fileData);
+
+    }
+
+    this.recoverLastView = function(){
+        var lastViewData = viewStorage.getLastViewData();
+        
+        if(!lastViewData || !lastViewData.fileList)
+            return false;
+
+        for(var i = 0; i < lastViewData.fileList.length; i++){
+
+            var _fileInfo = lastViewData.fileList[i];
+            var fileData = viewStorage.getFileData(_fileInfo.fileId);
+            console.log(_fileInfo);
+            
+            if(fileData && _fileInfo.status != FILE_STATUS.CLOSE){
+                var filePath = fileData.filePath;
+                var s = filePath.split(/\./);
+                if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
+                    this.addImageFile(fileData.filePath, fileData.content);
+                else 
+                    this.addFile(fileData.filePath, fileData.content, fileData.err, false);
+            }
+        }
+    }
+
+     // winName
+    if(option.winName && option.winName !== ""){
+        var fileIds = viewStorage.getOpenWinData(option.winName);
+        console.log(fileIds);
+
+        for(var i in fileIds){
+        
+            var fileId = fileIds[i];
+            var fileData = viewStorage.getFileData(fileId);
+            if(fileData){
+                var s = fileData.filePath.split(/\./);
+                if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
+                    this.addImageFile(fileData.filePath, fileData.content);
+                else
+                    this.addFile(fileData.filePath, fileData.content, fileData.err, false);
+
+            }
+        
+        }
+    }
+
+    window.onbeforeunload = function(event){
+        viewStorage.setLastViewData();
+        //event.returnValue = "終了してよろしいですか？" ;
+    }
+
 
     /* highligh まわり */
 
@@ -761,7 +893,7 @@ var glsl_review = function(isShow = true, option = {}){
         })(tabC1, tabElement);
 
         // ドラッグ
-        (function setDragTabListener(tabC, tabElement, tabParent){
+        (function setDragTabListener(tabC, tabElement, tabParent, fileId){
 
             var isDragging = false;
             var tabDragOffsetTop = 0;
@@ -801,7 +933,15 @@ var glsl_review = function(isShow = true, option = {}){
                 tabParent.appendChild(tabElement);
                 // 別タブ
                 if(e.offsetY - styleData.topBtns.height > 0){
-                    window.open(location.href + '?a=3', 'sasacas, "resizable=no,scrollbars=yes,status=no"');
+                   // window.open(location.href + '?a=3', 'sasacas, "resizable=no,scrollbars=yes,status=no"');
+                    
+                    var winName = viewStorage.getNewWinName();
+                    viewStorage.setOpenWinData([fileId], winName);
+
+                    //var newWin = window.open(`./GLSL_viewer.html`, winName, "resizable=no,scrollbars=yes,status=no");
+                    var newWin = window.open(`./GLSL_viewer.html`, winName, "scrollbars=yes,status=no");
+                    
+                    newWin.focus();
                     changeFileStatus(fileId, FILE_STATUS.CLOSE);
                 } else {
 
@@ -861,13 +1001,18 @@ var glsl_review = function(isShow = true, option = {}){
     }
 
     function addFileList( fileName, path, tabElement, viewElement, status, canvasId = 0){
+
+        // #TODO ユニークな値をふる
+        var fileId = fileList.length + 1;
+
         var fileData = {
             fileName: fileName,
             path: path,
             tabElement: tabElement,
             viewElement: viewElement,
             status: status,
-            canvasId: canvasId
+            canvasId: canvasId,
+            fileId: fileId
         };
 
         return fileList.push(fileData);
@@ -1003,7 +1148,7 @@ var glsl_review = function(isShow = true, option = {}){
         var lEchildrenLength = lE.childNodes.length;
         var showLineNum = 40;
         
-        //addClassElement(lE, 'scroll-performance');
+        addClassElement(lE, 'scroll-performance');
         var start = 0;
         var end = showLineNum;
 
@@ -1015,8 +1160,8 @@ var glsl_review = function(isShow = true, option = {}){
         lE.addEventListener('scroll', function(e) {
           var sY = lE.scrollTop;
             if (!ticking) {
-                addClassElement(lE, 'scroll-performance');
-
+                
+                //addClassElement(lE, 'scroll-performance');
                 /*
                 if(allShowState == 0){
                     
@@ -1099,6 +1244,7 @@ var glsl_review = function(isShow = true, option = {}){
         });
         
     }
+
 
     /* スタイルデータ取得 */
     function getStyleData () {
