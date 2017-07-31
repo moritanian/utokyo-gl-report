@@ -2,8 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <link rel="shortcut icon" type="image/x-icon" href="icon/teapod.png">
+
     <link rel=stylesheet href="css/glsl-base.css"> 
    
+    <script type="text/javascript" src="js/mini_query.js"></script>
     <script type="text/javascript" src="js/glsl-review.js"></script>
 
     <!--<script id="vs" source="shader/nothing.vs" type="xs/fs"></script> -->
@@ -95,9 +98,27 @@
         
         <div id="top-btns">
           <div id='file-btn' class="top-btn">file</div>
+          <div id='folder-btn' class="top-btn">folder</div>
+          <div id='view-btn' class="top-btn">
+            <div>view</div>
+            <ul id='view-dp-parent'>
+                <li id="layout-btn">
+                  <span>layout</span>
+                  <ul id="layout-dp-parent">
+                      <li class="layout-btn-child" col='1'>Single</li>
+                      <li class="layout-btn-child" col='2'>Columns: 2</li>
+                      <li class="layout-btn-child" col='3'>Columns: 3</li>
+                      <li class="layout-btn-child" col='4'>Columns: 4</li>
+                  </ul>
+                </li>
+                <li>identation</li>
+                <li>font size </li>
+            </ul>
+          </div>
           <div id='tool-btn' class="top-btn">tool</div>
           <!--<input type="file" id="file-select" name="files[]" multiple />-->
           <input type="file" id="file-select" name="file" />
+          <input type="file" id="folder-select" name="file" webkitdirectory/>
           
           <div id="minimize-btn">-</div>
 

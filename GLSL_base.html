@@ -2,7 +2,10 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <link rel="shortcut icon" type="image/x-icon" href="icon/teapod.png">
+    
     <link rel=stylesheet href="css/glsl-base.css"> 
+    <script type="text/javascript" src="js/mini_query.js"></script>
    
     <script type="text/javascript" src="js/glsl-review.js"></script>
     <script type="text/javascript" src="js/glsl-base.js"></script>
@@ -11,10 +14,10 @@
     <glsl-base>
         <debug value="true"></debug>
         <tab-size value="4"></tab-size>
-        <layout-col value="2"></tab-size>
+        <layout-col value="2"></layout-col>
     </glsl-base>
 
-    <script id="fs" source="shader/floor3.fs"  type="xs/fs"></script> 
+    <script id="fs" source="shader/floor.fs"  type="xs/fs"></script> 
     <script id="vs" type="xs/vs">
       // 頂点シェーダには一切手入れする必要なし
       attribute vec3 position;
@@ -52,9 +55,12 @@
         
         <div id="top-btns">
           <div id='file-btn' class="top-btn">file</div>
+          <div id='folder-btn' class="top-btn">folder</div>
           <div id='tool-btn' class="top-btn">tool</div>
           <!--<input type="file" id="file-select" name="files[]" multiple />-->
           <input type="file" id="file-select" name="file" />
+          <input type="file" id="folder-select" name="file" webkitdirectory/>
+
           
           <div id="minimize-btn">-</div>
 

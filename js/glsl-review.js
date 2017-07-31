@@ -86,7 +86,7 @@ var glsl_review = function(isShow = true, option = {}){
         'hl-operator': ['+', '-', '*', '/', '||', '|', '&&', '&', '=', 
           '<', '>', '<=', '>=', '==', '!'],
         'hl-bracket' : ['(', ')', '{', '}', '[', ']', ';', '.', ','],
-        'hl-conditional-operator': ['if', 'return', 'else', 'while', 'for'],
+        'hl-conditional-operator': ['if', 'return', 'else', 'while', 'for', 'break'],
         'hl-builtin-function': ['pow', 'exp', 'sqrt', 'abs', 'sign', 
           'floor', 'ceil', 'fract', 'mod', 'min', 'max', 'radians', 'degrees',
           'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 
@@ -146,16 +146,15 @@ var glsl_review = function(isShow = true, option = {}){
       
     })();
 
+    var lE0 = _$_('#glsl-base-debug-container');
+    var lEn = _$_('#glsl-base-debug-normalizer');
+    var lEm = _$_('#glsl-base-debug-main');
 
-    var lE0 = getElementById('glsl-base-debug-container');
-    var lEn = getElementById('glsl-base-debug-normalizer');
-    var lEm = getElementById('glsl-base-debug-main');
 
-    //var lEsList = document.getElementsByClassName('glsl-base-debug-files');
-    var reviewCanvas = getElementById('review-canvas');
-    var tabAriaParent = getElementById('top-tabs');
-    var topBtnParent = getElementById('top-btns');
-    var sepParent = getElementById('separator-parent');
+    var reviewCanvas = _$_('#review-canvas');
+    var tabAriaParent = _$_('#top-tabs');
+    var topBtnParent = _$_('#top-btns');
+    var sepParent = _$_('#separator-parent');
     var layoutCol = option.layoutCol || 1;
 
     var separatorList = [];
@@ -189,38 +188,42 @@ var glsl_review = function(isShow = true, option = {}){
     
     for(var id=0; id<layoutCol; id++){
 
-        var lEs = createElement('div', `canvas-child-${id}`, ['glsl-base-debug-files']);
+        var lEs = _$_.create('div', `canvas-child-${id}`, ['glsl-base-debug-files']);
 
         // # TODO 外側の margin-left + margin-right = 20 計算でだしたい 
         var wid = (window.innerWidth - 20) / layoutCol; 
-        setStyleElement(lEs, 'width', `${wid}px`);
+        lEs.width = wid;
         
         lEsList.push(lEs);
         reviewCanvas.appendChild(lEs);
 
-        var tabAria = createElement('ul', '', ['tabs-ul']);
+        var tabAria = _$_.create('ul', '', ['tabs-ul']);
         tabAriaList.push(tabAria);
         //setStyleElement(tabAria, 'width', `${100/layoutCol}%`);
-        setStyleElement(tabAria, 'width', `${wid}px`);
+        tabAria.width = wid;
 
         if(id < layoutCol - 1){
           
             // separaor            
             (function(canvasId){
-                var separator = createElement('div', '', ['separator']);
+                var separator = _$_.create('div', '', ['separator']);
                 //setStyleElement(separator, 'left', `${100/layoutCol*(id+1)}%`);
-                setStyleElement(separator, 'left', `${wid * (id+1)}px`);
+                //separator.left = wid * (id + 1);
+                separator.position(wid * (id + 1));
                 separatorList.push(separator);
+
                 sepParent.appendChild(separator);
 
                 var mmove = function(e){
-                    var p = (e.clientX - lEsList[canvasId ].getBoundingClientRect().left);
+                    var p = (e.clientX - lEsList[canvasId ].offset().left);
                     //p = p/reviewCanvas.offsetWidth*100.0;
-                    if(canvasId == layoutCol -2)
-                        var p2 =  (styleData.reviewCanvas.left + reviewCanvas.offsetWidth - e.clientX); // 要計算
-                    else
-                        var p2 =  (lEsList[canvasId +2].getBoundingClientRect().left - e.clientX); // 要計算
+                    if(canvasId == layoutCol -2){
+                        var p2 =  (styleData.reviewCanvas.left + reviewCanvas.innerWidth() - e.clientX); // 要計算
+                    } else {
+                        var p2 =  (lEsList[canvasId +2].offset().left - e.clientX); // 要計算
+                    }
                     //p2 = p2/reviewCanvas.offsetWidth*100.0;
+
 
                     var minWid = 20;
                     if(p < minWid){
@@ -234,13 +237,13 @@ var glsl_review = function(isShow = true, option = {}){
                     }
 
                     //setStyleElement(lEsList[canvasId], 'width', `${p}%`);
-                    setStyleElement(lEsList[canvasId], 'width', `${p}px`);
+                    lEsList[canvasId].width = p;
                     //setStyleElement(tabAriaList[canvasId], 'width', `${p}%`);
-                    setStyleElement(tabAriaList[canvasId], 'width', `${p}px`);
+                    tabAriaList[canvasId].width = p;
                     //setStyleElement(lEsList[canvasId + 1], 'width', `${p2}%`);
-                    setStyleElement(lEsList[canvasId + 1], 'width', `${p2}px`);
+                    lEsList[canvasId + 1].width = p2;
                     //setStyleElement(tabAriaList[canvasId + 1], 'width', `${p2}%`);
-                    setStyleElement(tabAriaList[canvasId + 1], 'width', `${p2}px`);
+                    tabAriaList[canvasId + 1].width = p2;
                     return false;
                 }
 
@@ -248,9 +251,10 @@ var glsl_review = function(isShow = true, option = {}){
                     document.removeEventListener('mousemove', mmove, false);
                     document.removeEventListener('mouseup', mouseup, false);
                     //setStyleElement(separator, 'left', `${e.clientX - reviewCanvas.getBoundingClientRect().left - 2}px`);
-                    setStyleElement(separator, 'left', `${lEsList[canvasId+1].getBoundingClientRect().left - styleData.reviewCanvas.left - 2}px`);
-                    setStyleElement(reviewCanvas, 'cursor', '');
-                    removeClassElement(reviewCanvas, 'no-user-select');
+                    
+                    separator.css('left', `${lEsList[canvasId+1].offset().left - styleData.reviewCanvas.left - 2}px`);
+                    reviewCanvas.css('cursor', '');
+                    reviewCanvas.removeClass('no-user-select');
 
 
                     /*
@@ -273,8 +277,8 @@ var glsl_review = function(isShow = true, option = {}){
 
                     document.addEventListener('mousemove', mmove, false);
                     document.addEventListener('mouseup', mouseup, false);
-                    setStyleElement(reviewCanvas, 'cursor', 'e-resize');
-                    addClassElement(reviewCanvas, 'no-user-select');
+                    reviewCanvas.css('cursor', 'e-resize');
+                    reviewCanvas.addClass('no-user-select');
                    
                 });
 
@@ -285,20 +289,16 @@ var glsl_review = function(isShow = true, option = {}){
         tabAriaParent.appendChild(tabAria);
     } 
 
-    showElement(lE0);
+    lE0.show();
     getStyleData();
 
     if(isShow)
-        showElement(lE0);
+        lE0.show();
     else
-        hideElement(lE0);
+        lE0.hide();
 
-
-
-
-    // top btns
-    
-    var fileBtn = getElementById('file-btn');
+    // top btns  
+    var fileBtn = _$_('#file-btn');
     /*
     fileBtn.addEventListener('click', function(){
         console.log('fileBtn');
@@ -308,15 +308,53 @@ var glsl_review = function(isShow = true, option = {}){
     });
     */
 
-    var fselect = getElementById('file-select');
+    var fselect = _$_('#file-select');
 
-    fselect.onmouseover = function(){
-        addClassElement(fileBtn, 'hover');
-    };
+    fselect.mouseover(function(){
+        fileBtn.addClass('hover');
+    });
 
-    fselect.onmouseout = function(){
-        removeClassElement(fileBtn, 'hover');
+    fselect.mouseout(function(){
+        fileBtn.removeClass('hover');
+    });
+
+    var folderBtn = _$_('#folder-btn');
+   
+    var folderselect = _$_('#folder-select');
+
+    folderselect.mouseover(function(){
+        folderBtn.addClass('hover');
+    });
+
+    folderselect.mouseout(function(){
+        folderBtn.removeClass('hover');
+    });
+
+    var viewBtn = _$_('#view-btn');
+    var viewDpParent = _$_('#view-dp-parent');
+    viewBtn.hover(function(){
+        viewDpParent.show();
+    }, function(){
+        viewDpParent.hide();
+    });
+
+    var layoutBtn = _$_('#layout-btn');
+    var layoutDpParent = _$_('#layout-dp-parent');
+    layoutBtn.hover(function(){
+        layoutDpParent.show();
+    }, function(){
+        layoutDpParent.hide();
+    });
+
+    var layoutChildrenBtns = document.getElementsByClassName('layout-btn-child');
+    for(var i=0; i<layoutChildrenBtns.length; i++){
+        layoutChildrenBtns[i].addEventListener('click', function(){
+            var col = _$_(this).attr('col');
+            console.log(col);
+            layoutDpParent.hide();
+        })  
     }
+    
 
     /*
     fselect.addEventListener('click', function(evt){
@@ -364,25 +402,27 @@ var glsl_review = function(isShow = true, option = {}){
         }
     }, false);
 
-    getElementById('minimize-btn').addEventListener('click', function(e){
-        hideElement(lEm);
-        showElement(lEn);
+    _$_('#minimize-btn').click(function(){    
+        lEm.hide();
+        lEn.show();
     });
       
-    lEn.addEventListener('click', function(){
-        showElement(lEm);
-        hideElement(lEn);
+    lEn.click(function(){
+        lEm.show();
+        lEn.hide();
     });
 
         
     // needed dialog elements
-    var errContentElement = createElement('div', '', ['err-content']);
-    hideElement(errContentElement);
-    document.body.appendChild(errContentElement);
+    //var errContentElement = createElement('div', '', ['err-content']);
+    var errContentElement = _$_.create('div', '', ['err-content']);
+    
+    errContentElement.hide();
+    _$_('body').appendChild(errContentElement);
 
-    var pathIndicatorDialog = createElement('div', '', ['path-indicator-dialog']);
-    hideElement(pathIndicatorDialog);
-    document.body.appendChild(pathIndicatorDialog);
+    var pathIndicatorDialog = _$_.create('div', '', ['path-indicator-dialog']);
+    pathIndicatorDialog.hide();
+    _$_('body').appendChild(pathIndicatorDialog);
 
     // i: number, j: lines, l: log
     //this.addFile = function(i, j, l){
@@ -396,18 +436,20 @@ var glsl_review = function(isShow = true, option = {}){
             viewStorage.setFileData(filePath, fileId, j, l);
        
         //var lE = b('glsl-base-debug');
-        var lE = createElement('div', '', ['glsl-base-debug'])
+        var lE = _$_.create('code', '', ['glsl-base-debug']);
 
         //lE.textContent = errorLines;
 
-        var errorLines = l.split('\n');
+        var errorLines = [];
+        if(l)
+            errorLines = l.split('\n');
+
         var lines = j.split("\n");
         var ppe, pe, cp1, cp2, c1, c2;
           
-        ppe = createElement('p', '', ['code-line']);
-        cp1 = createElement('pre', '', ['line-number']);          
-        cp2 = createElement('pre', '', ['line-content']);                    
-       
+        ppe = _$_.create('p', '', ['code-line']);
+        cp1 = _$_.create('pre', '', ['line-number']);          
+        cp2 = _$_.create('pre', '', ['line-content']);   
 
         var lastRow = -1;
         var errRow;
@@ -437,46 +479,46 @@ var glsl_review = function(isShow = true, option = {}){
 
             }
         
-            pe = ppe.cloneNode();
-            pe.textContent = errorLines[index];
+            pe = ppe.clone();
+            pe.text(errorLines[index]);
+            pe.addClass('error-text');
             lE.appendChild(pe);
         }
 
         var errHead = 0;
         var errorNum = errorIndexList.length;
 
+        var maxLetterNumInLine = 0;
         var hlStatus = {isComment : false};
-        for(var index = 0; index < lines.length; index++){
-            pe = ppe.cloneNode();
-            c1 = cp1.cloneNode();
-            c2 = cp2.cloneNode();
-            c1.textContent = index + 1;
 
-            c2.innerHTML =  highLightOneLine(lines[index], fileId, hlStatus);
+        for(var index = 0; index < lines.length; index++){
+            pe = ppe.clone();
+            c1 = cp1.clone();
+            c2 = cp2.clone();
+            c1.text(index + 1);
+
+            c2.html(highLightOneLine(lines[index], fileId, hlStatus));
 
             //c2.textContent = lines[index];
             pe.appendChild(c1);
             pe.appendChild(c2);
             
             if(errorNum > 0  && errorIndexList[errHead]["row"] === index + 1){
-                pe.classList.add('error-line');
+                pe.addClass('error-line');
 
                 (function(){
                     
                     var ei = errHead;
                     
-                    pe.onmouseover = function(e){
-                        errContentElement.textContent = errorIndexList[ei]["contents"][0];
-                        errContentElement.style.left = e.clientX + 40 + "px";
-                        errContentElement.style.top = e.clientY - 40 + "px";
+                    pe.hover(function(e){
+                        errContentElement.text(errorIndexList[ei]["contents"][0]);
+                        errContentElement.position( e.clientX + 40 ,  e.clientY - 40 );
                         this.classList.add('hover-line');
-                        showElement(errContentElement);
-                    }
-                
-                    pe.onmouseout = function(){
-                        errContentElement.style.display = 'none';
+                        errContentElement.show();
+                    }, function(){
+                        errContentElement.hide();
                         this.classList.remove('hover-line');
-                    }
+                    });
                 })();
               
                 if(errHead + 1 < errorNum ){
@@ -486,8 +528,15 @@ var glsl_review = function(isShow = true, option = {}){
                 if(!firstErrorLineElement){
                     firstErrorLineElement = pe;
                 }
+
+            }
+
+            if(maxLetterNumInLine < lines[index].length){
+                maxLetterNumInLine = lines[index].length;
             }
         
+            pe.css('min-width', lines[index].length * 6 + 100 + 'px');
+
             lE.appendChild(pe);
             
         }
@@ -514,19 +563,19 @@ var glsl_review = function(isShow = true, option = {}){
                 return false;
 
             if(IS_SCROLL_PERFORMANCE_UP)
-                removeClassElement(lE, 'scroll-performance');
+                lE.removeClass('scroll-performance');
 
             for(var id=cs.length - 1; id >= 0; id--){
 
                 wordElemTop = cs[id].getBoundingClientRect().top;
                 if(wordElemTop - e.clientY < 0){
-                    activeWordElem = cs[id];
+                    activeWordElem = _$_(cs[id]);
                     break;
                 }
             }
 
             if(IS_SCROLL_PERFORMANCE_UP){
-                addClassElement(lE, 'scroll-performance');
+                lE.addClass('scroll-performance');
             }
                
 
@@ -537,14 +586,14 @@ var glsl_review = function(isShow = true, option = {}){
 
             lE.scrollTop  += tp;
             //rangeWord(cs[0]);
-            activeWordElem.classList.add('active-word');
+            activeWordElem.addClass('active-word');
 
             return false;
         });
 
-        lE.addEventListener('click', function(e){
+        lE.click(function(e){
             if(activeWordElem){
-                activeWordElem.classList.remove('active-word');
+                activeWordElem.removeClass('active-word');
                 activeWordElem = null;
             }
         });
@@ -555,7 +604,7 @@ var glsl_review = function(isShow = true, option = {}){
                 return;
 
             var sc = 0;
-            var top = firstErrorLineElement.getBoundingClientRect().top - window.innerHeight / 2;
+            var top = firstErrorLineElement.offset().top - window.innerHeight / 2;
             var st = 0.05;
             var t = 0.3;
             
@@ -572,10 +621,11 @@ var glsl_review = function(isShow = true, option = {}){
     }
 
     this.addImageFile = function(filePath, fileData, isStorageSave = true){
-        var span = document.createElement('span');
-        var elem = createElement('div', '', ['glsl-base-debug']);
-        elem.innerHTML = ['<img class="thumb" src="', fileData,
-                                        '" title="', escape(filePath), '"/>'].join('');
+        var span = _$_.create('span');
+
+        var elem = _$_.create('div', '', ['glsl-base-debug']);
+        elem.html(['<img class="thumb" src="', fileData,
+                                        '" title="', escape(filePath), '"/>'].join(''));
         var fileId = addFileAndtab(filePath, elem);
 
         if(isStorageSave)
@@ -852,68 +902,74 @@ var glsl_review = function(isShow = true, option = {}){
         var fileName = s[s.length - 1];
 
         //var tabId = `${fileName.split(/\./)[0]}-`
-        var tabElement = createElement('li', '', ['file-tab']);
+        var tabElement = _$_.create('li', '', ['file-tab']);
         
         // tab-name element
-        var tabC1 = createElement('span', '', ['file-tab-name']);
-        tabC1.textContent = fileName;
+        var tabC1 = _$_.create('span', '', ['file-tab-name']);
+        tabC1.text(fileName);
 
           // tab close element
-        var tabC2 = createElement('span', '', ['file-tab-close-btn']);
-        tabC2.textContent = '×';
+        var tabC2 = _$_.create('span', '', ['file-tab-close-btn']);
+        tabC2.text('×');
 
         tabElement.appendChild(tabC1);
         tabElement.appendChild(tabC2);
 
         var fileId = addFileList(fileName, path, tabElement, viewElement, status, canvasId);
         
+
         // hover 時にpath名表示
         (function setPathIndicatorListener(tab, tabElement){
             var isHovering = false;
             var requiredHoveringTime = 1000;
-            tab.onmouseover = function(e){
+            tab.mouseover(function(e){
                 isHovering = true;
                 setTimeout(function(){
-                    if(hasClassElement(tabElement, 'dragging-tab')){
+                    if(tabElement.hasClass('dragging-tab')){
                         isHovering = false;
                         return;
                     }
                     if(isHovering){
-                        setPositionElement(pathIndicatorDialog, e.clientX + 30, e.clientY);
-                        pathIndicatorDialog.textContent = path;
-                        showElement(pathIndicatorDialog);
+                        pathIndicatorDialog.position( e.clientX + 30, e.clientY);
+                        pathIndicatorDialog.text(path);
+                        pathIndicatorDialog.show();
                     }
                 }, requiredHoveringTime);
-            }
+            });
 
-            tab.onmouseout = function(e){
+            tab.mouseout(function(e){
                 isHovering = false; 
-                hideElement(pathIndicatorDialog);            
-            }
+                pathIndicatorDialog.hide();
+            });
+
+            tab.mousedown(function(e){
+                isHovering = false;
+                pathIndicatorDialog.hide();
+                return true;
+            });
         })(tabC1, tabElement);
 
         // ドラッグ
         (function setDragTabListener(tabC, tabElement, tabParent, fileId){
-
             var isDragging = false;
             var tabDragOffsetTop = 0;
             var tabDragOffsetLeft = 0;
             
             function tabDrag(e){
-                
+                if(e.movementX == 0 && e.movementY == 0)
+                return;                
                 if(!isDragging ){
-
                     tabParent.removeChild(tabElement);
                     lEm.appendChild(tabElement); 
 
                     isDragging = true;
                     
-                    addClassElement(tabElement, 'dragging-tab');
-                    addClassElement(reviewCanvas, 'no-user-select');
+                    tabElement.addClass('dragging-tab');
+                    reviewCanvas.addClass('no-user-select');
 
                 }
 
-                setPositionElement(tabElement, 
+                tabElement.position( 
                     e.clientX - styleData.container.left - tabDragOffsetLeft, 
                     e.clientY - styleData.container.top - tabDragOffsetTop);
             }
@@ -927,8 +983,9 @@ var glsl_review = function(isShow = true, option = {}){
 
                 isDragging = false;
 
-                removeClassElement(reviewCanvas, 'no-user-select');
-                removeClassElement(tabElement, 'dragging-tab');
+                reviewCanvas.removeClass('no-user-select');
+                tabElement.removeClass('dragging-tab');
+
                 lEm.removeChild(tabElement);
                 tabParent.appendChild(tabElement);
                 // 別タブ
@@ -948,10 +1005,13 @@ var glsl_review = function(isShow = true, option = {}){
                 }
             }
 
-            tabC.addEventListener('mousedown', function(e){
+            tabC.mousedown(function(e){
                 
-                document.addEventListener('mousemove', tabDrag, false);
-                document.addEventListener('mouseup', tabDragEnd, false);
+
+                _$_(document).mousemove(tabDrag, false);
+                _$_(document).mouseup(tabDragEnd, false);
+
+                changeFileStatus(fileId, FILE_STATUS.SHOW);
 
                 tabDragOffsetLeft = e.offsetX; 
                 tabDragOffsetTop = e.offsetY + 7; 
@@ -969,9 +1029,10 @@ var glsl_review = function(isShow = true, option = {}){
         });
         
         var tabId = `tab-file${fileId}`;
-        addIdElement(tabElement, tabId);
+        tabElement.addId(tabId);
 
-        tabC1.addEventListener('click', function(){
+        // SHOW tab from HIDE
+        tabC1.click(function(){
 
             changeFileStatus(fileId, FILE_STATUS.SHOW);
 
@@ -990,8 +1051,8 @@ var glsl_review = function(isShow = true, option = {}){
     function appendlEsList(elem){
         var smallestId = 0, smallestNum = 1000;
         for(var id=0; id<lEsList.length; id++){
-            if(smallestNum > lEsList[id].childNodes.length){
-                smallestNum = lEsList[id].childNodes.length;
+            if(smallestNum > lEsList[id].children().length){
+                smallestNum = lEsList[id].children().length;
                 smallestId = id;
             }
         }
@@ -1071,21 +1132,20 @@ var glsl_review = function(isShow = true, option = {}){
 
         switch(status){
             case FILE_STATUS.SHOW:
-                addClassElement(fileData.tabElement, 'active-tab');
-                showElement(fileData.tabElement, 'flex');
-                showElement(fileData.viewElement);
+                fileData.tabElement.addClass('active-tab');
+                fileData.tabElement.show('flex');
+                fileData.viewElement.show();
                 break;
 
             case FILE_STATUS.HIDE:
-                removeClassElement(fileData.tabElement, 'active-tab');
-                //hideElement(fileData.tabElement);
-                hideElement(fileData.viewElement);
+                fileData.tabElement.removeClass('active-tab');
+                fileData.viewElement.hide();
                 break;
 
             case FILE_STATUS.CLOSE:
-                removeClassElement(fileData.tabElement, 'active-tab');
-                hideElement(fileData.tabElement);
-                hideElement(fileData.viewElement);
+                fileData.tabElement.removeClass('active-tab');
+                fileData.tabElement.hide();
+                fileData.viewElement.hide();
                 break;
         }
 
@@ -1097,7 +1157,7 @@ var glsl_review = function(isShow = true, option = {}){
     function setCursorListener(){
         cursorX = 20;
         cursorY = 20;
-        cursorElement = getElementById('cursor');
+        cursorElement = _$_('#cursor');
         var fontVSpan = 14; // Y
         var fontHolSpan = 6; // X
 
@@ -1128,9 +1188,9 @@ var glsl_review = function(isShow = true, option = {}){
                 case 32:
                     break;
             }
-            removeClassElement(cursorElement, 'blinking');
-            setPositionElement(cursorElement, cursorX, cursorY);
-            addClassElement(cursorElement, 'blinking');
+            cursorElement.removeClass('blinking');
+            cursorElement.position(cursorX, cursorY);
+            cursorElement.addClass('blinking');
             return false;
         });
     }
@@ -1145,16 +1205,17 @@ var glsl_review = function(isShow = true, option = {}){
     function scrollPerformance(lE){
         //return;
         var ticking = false, allShowState = 0;
-        var lEchildrenLength = lE.childNodes.length;
+        var lEchildrenLength = lE.children().length;
         var showLineNum = 40;
         
-        addClassElement(lE, 'scroll-performance');
+        lE.addClass('scroll-performance');
         var start = 0;
-        var end = showLineNum;
 
         var maxId = showLineNum < lEchildrenLength ? showLineNum : lEchildrenLength;
+        var end = maxId;
+
         for(var id=0; id < maxId; id++){
-            addClassElement(lE.childNodes[id], 'show');
+            _$_(lE.children()[id]).addClass('show');
         }
         
         lE.addEventListener('scroll', function(e) {
@@ -1198,12 +1259,12 @@ var glsl_review = function(isShow = true, option = {}){
                     if(start == startId && endId == end)
                         return;
                     
-                   // console.log(startId + ' ' + endId + ' ' + start + ' ' + end);
+                    //console.log(startId + ' ' + endId + ' ' + start + ' ' + end);
                     var minId = start > startId ? startId : start;
                     var maxId = end > endId ? end : endId;
 
                     for(var id = minId; id< maxId; id++){
-                        var child = lE.childNodes[id];
+                        var child = lE.children(id);
                         //if(!child)
                         //    continue;
                         var action = 0;
@@ -1228,9 +1289,9 @@ var glsl_review = function(isShow = true, option = {}){
                             action = -1;
                         }
                         if(action == 1)
-                            addClassElement(lE.childNodes[id], 'show');
+                            lE.children(id).addClass('show');
                         else if(action == -1)
-                            removeClassElement(lE.childNodes[id], 'show');
+                            lE.children(id).removeClass('show');
                     }
 
                     start = startId;
@@ -1249,77 +1310,26 @@ var glsl_review = function(isShow = true, option = {}){
     /* スタイルデータ取得 */
     function getStyleData () {
 
-        var containerStyle = lE0.getBoundingClientRect();
+        var containerStyle = lE0.offset();
         styleData["container"] = {
             'left' : containerStyle.left,
             'top': containerStyle.top
         };
 
-
         styleData['topBtns'] = {
-            'width': topBtnParent.offsetWidth,
-            'height': topBtnParent.offsetHeight
+            'width': topBtnParent.innerWidth(),
+            'height': topBtnParent.innerHeight()
         };
 
         styleData['topTbs'] = {
 
         };
 
-        var reviewCanvasStyle = reviewCanvas.getBoundingClientRect();
+        var reviewCanvasStyle = reviewCanvas.offset();
         styleData['reviewCanvas'] = {
             'left': reviewCanvasStyle.left,
-            'width': reviewCanvas.offsetWidth
+            'width': reviewCanvas.innerWidth()
         };
-    }
-
-    /* dom操作系 */
-    function showElement(elem, s = 'block'){
-        elem.style.display = s;             
-    }
-
-    function hideElement(elem){
-        elem.style.display = 'none';
-    }
-
-    function setStyleElement(elem, s1, s2){
-        elem.style[s1] = s2;
-    }
-
-    function setPositionElement(elem, x, y){
-        setStyleElement(elem, 'left', `${x}px`);
-        setStyleElement(elem, 'top', `${y}px`);
-    }
-
-    function addClassElement(elem, _class){
-        elem.classList.add(_class);
-    }
-
-    function removeClassElement(elem, _class){
-        elem.classList.remove(_class);
-    }
-
-    function addIdElement(elem, id){
-        elem.setAttribute('id', id);
-    }
-
-    function getElementById(id){
-        return document.getElementById(id);
-    }
-
-    function createElement(tag, id, classes){
-        var elem = document.createElement(tag);
-        if(id)
-            addIdElement(elem, id);
-
-        for(var i in classes){
-            addClassElement(elem, classes[i]);
-        }
-
-        return elem;
-    }
-
-    function hasClassElement (elem, _class){
-        return elem.classList.contains(_class);
     }
 
 }
