@@ -332,17 +332,30 @@ var glsl_review = function(isShow = true, option = {}){
 
     var viewBtn = _$_('#view-btn');
     var viewDpParent = _$_('#view-dp-parent');
-    viewBtn.hover(function(){
+
+    viewBtn.click(function(){
         viewDpParent.show();
-    }, function(){
+    });
+    viewBtn.mouseleave(function(){
         viewDpParent.hide();
     });
 
     var layoutBtn = _$_('#layout-btn');
     var layoutDpParent = _$_('#layout-dp-parent');
-    layoutBtn.hover(function(){
-        layoutDpParent.show();
-    }, function(){
+
+    var layoutBtnHoveringFlg = false;
+    layoutBtn.mouseover(function(){
+
+        layoutBtnHoveringFlg = true;
+        
+        setTimeout(function(){
+            if(layoutBtnHoveringFlg){
+                layoutDpParent.show();
+            }
+        }, 500);
+
+    }).mouseleave( function(){
+        layoutBtnHoveringFlg = false;
         layoutDpParent.hide();
     });
 
@@ -1162,30 +1175,35 @@ var glsl_review = function(isShow = true, option = {}){
         var fontHolSpan = 6; // X
 
         // key inputs # TODO pcのみにしたい
-        document.addEventListener("keydown", function( event ) {
+        window.addEventListener("keydown", function( event ) {
             switch( event.keyCode ) {
                 // left
                 case 37:
-                case 65:
                     cursorX -= fontHolSpan;
                     break;
                  // right
                 case 39:
-                case 68:
                     cursorX += fontHolSpan;
                   break;
                 // up
                 case 38:
-                case 87:
                     cursorY -= fontVSpan;
                   break;
                 // down
                 case 40:
-                case 83:
                     cursorY += fontVSpan;
                   break;
                 // space
                 case 32:
+                    break;
+
+                // m
+                case 77:
+                    if(event.ctrlKey){
+                        Instance.addFile('untitled', '');
+                        event.preventDefault(); 
+                    }
+
                     break;
             }
             cursorElement.removeClass('blinking');
@@ -1199,8 +1217,6 @@ var glsl_review = function(isShow = true, option = {}){
         画面上のみ表示する
         これにより600行のスクリプトの update layer tree の1サイクルあたりの時間が
         200ms から　50ms ほどに改善
-        # TODO 自動スクロールが利かなくなった
-        # TODO 幅方向のスクロール
      */
     function scrollPerformance(lE){
         //return;

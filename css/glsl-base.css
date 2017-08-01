@@ -82,12 +82,12 @@
 }
 
 #glsl-base-debug-main #view-btn #view-dp-parent {
-  display: none; 
   position: absolute;
   z-index: 100;
-  background-color: rgba(255, 255, 255, 0.93);
+  background-color: rgba(255, 255, 255, 0.97);
   width: 120px;
   overflow: visible;
+  box-shadow: 0px 1px 2px #2f2f2f;
   display: none;
 }
 
@@ -95,13 +95,38 @@
   background-color: rgba(0, 242, 207, 0.15);
 }
 
+#glsl-base-debug-main #view-btn ul li span {
+  text-align: left;
+  padding: le;
+  float: left;
+  left: 20px;
+  padding-left: 20px;
+}
+
+#glsl-base-debug-main #view-btn #view-dp-parent .right-extendable::before {
+  z-index: 1;
+  position: absolute;
+  right: 1px;
+  top: -1px;
+  font-family: cursive;
+  line-height: 23px;
+  pointer-events: none;
+  width: 15px;
+  font-size: 12px;
+  content: ">";
+  /* font-weight: 900; */
+  height: 20px;
+  line-height: 20px;
+}
+
 #glsl-base-debug-main #view-btn #view-dp-parent #layout-dp-parent {
-  background-color: rgba(255, 255, 255, 0.93);
+  background-color: rgba(255, 255, 255, 0.97);
   position: absolute;
   left: 120px;
   width: 100%;
   top: 0px;
   box-shadow: 0px 1px 2px #2f2f2f;
+  display: none;
 }
 
 #glsl-base-debug-container #top-tabs{
@@ -234,6 +259,10 @@
   color: white;
 }
 
+.glsl-base-debug-files .glsl-base-debug img {
+   background: url(data:image/gif;base64,R0lGODlhEAAQAPEBAAAAAL+/v////wAAACH5BAAAAAAALAAAAAAQABAAAAIfjG+iq4jM3IFLJipswNly/XkcBpIiVaInlLJr9FZWAQA7) fixed;
+}
+
 .glsl-base-debug-files .glsl-base-debug::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -271,6 +300,7 @@
   color: #e8c2c2;
   text-align: right;
   line-height: 14px;
+  user-select: none;
 }
 
 /*

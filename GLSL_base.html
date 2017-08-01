@@ -17,7 +17,7 @@
         <layout-col value="2"></layout-col>
     </glsl-base>
 
-    <script id="fs" source="shader/floor.fs"  type="xs/fs"></script> 
+    <script id="fs" source="shader/floor4.fs"  type="xs/fs"></script> 
     <script id="vs" type="xs/vs">
       // 頂点シェーダには一切手入れする必要なし
       attribute vec3 position;
@@ -56,6 +56,22 @@
         <div id="top-btns">
           <div id='file-btn' class="top-btn">file</div>
           <div id='folder-btn' class="top-btn">folder</div>
+          <div id='view-btn' class="top-btn">
+            <div>view</div>
+            <ul id='view-dp-parent'>
+                <li id="layout-btn">
+                  <span>layout</span>
+                  <ul id="layout-dp-parent">
+                      <li class="layout-btn-child" col='1'>Single</li>
+                      <li class="layout-btn-child" col='2'>Columns: 2</li>
+                      <li class="layout-btn-child" col='3'>Columns: 3</li>
+                      <li class="layout-btn-child" col='4'>Columns: 4</li>
+                  </ul>
+                </li>
+                <li>identation</li>
+                <li>font size </li>
+            </ul>
+          </div>
           <div id='tool-btn' class="top-btn">tool</div>
           <!--<input type="file" id="file-select" name="files[]" multiple />-->
           <input type="file" id="file-select" name="file" />

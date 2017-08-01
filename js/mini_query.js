@@ -139,6 +139,10 @@ var _$_ = (function(){
             return this;
         },
 
+        hasScrollBar: function() {
+            return this.element.scrollHeight > this.innerHeight();
+        },
+
         addEventListener: function(event, func, b = false){
             this.element.addEventListener(event, func, b);
             return this;
@@ -168,9 +172,17 @@ var _$_ = (function(){
             return this.addEventListener('mouseover', func, b);
         },
 
+        mouseenter: function(func, b = false){
+            return this.addEventListener('mouseenter', func, b);
+        },
+
+        mouseleave: function(func, b = false){
+            return this.addEventListener('mouseleave', func, b);
+        },
+
         hover: function(inFunc, outFunc, b){
-            this.addEventListener('mouseover', inFunc, b);
-            this.addEventListener('mouseout', outFunc, b);
+            this.mouseover(inFunc, b);
+            this.mouseout(outFunc, b);
             return this;
         },
 
