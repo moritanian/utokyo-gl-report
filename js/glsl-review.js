@@ -161,6 +161,10 @@ var glsl_review = function(isShow = true, option = {}){
     var lEsList = []; // ファイルビューエリアのリスト(カラム数の要素)
     var tabAriaList = []; // tabエリアのリスト(カラム数の要素)
 
+    // 計算でだしたい
+    const TabSepWid = 2;
+    const CanvasSepWid = 8; 
+
     var styleData = {
         "container": {},
         "topBtns" : {},
@@ -186,13 +190,16 @@ var glsl_review = function(isShow = true, option = {}){
         return false;
     };
     
+    var canvasWidth = window.innerWidth - 22; 
+
     for(var id=0; id<layoutCol; id++){
 
         var lEs = _$_.create('div', `canvas-child-${id}`, ['glsl-base-debug-files']);
 
-        // # TODO 外側の margin-left + margin-right = 20 計算でだしたい 
-        var wid = (window.innerWidth - 20) / layoutCol; 
-        lEs.width = wid;
+        // # TODO 外側の margin-left + margin-right = 20 計算でだしたい
+       
+        var wid = (canvasWidth + CanvasSepWid) / layoutCol - CanvasSepWid; 
+        lEs.width = (wid / canvasWidth * 100.0) + '%';
         
         lEsList.push(lEs);
         reviewCanvas.appendChild(lEs);
@@ -200,7 +207,9 @@ var glsl_review = function(isShow = true, option = {}){
         var tabAria = _$_.create('ul', '', ['tabs-ul']);
         tabAriaList.push(tabAria);
         //setStyleElement(tabAria, 'width', `${100/layoutCol}%`);
-        tabAria.width = wid;
+        if(id > 0)
+            wid += CanvasSepWid - TabSepWid; 
+        tabAria.width = (wid / canvasWidth * 100.0) + '%';
 
         if(id < layoutCol - 1){
           
@@ -209,18 +218,21 @@ var glsl_review = function(isShow = true, option = {}){
                 var separator = _$_.create('div', '', ['separator']);
                 //setStyleElement(separator, 'left', `${100/layoutCol*(id+1)}%`);
                 //separator.left = wid * (id + 1);
-                separator.position(wid * (id + 1));
+                //separator.position(wid * (id + 1));
                 separatorList.push(separator);
 
-                sepParent.appendChild(separator);
+                reviewCanvas.appendChild(separator);
+                //sepParent.appendChild(separator);
 
                 var mmove = function(e){
+                    var canvasWidth = window.innerWidth - 22; 
+
                     var p = (e.clientX - lEsList[canvasId ].offset().left);
                     //p = p/reviewCanvas.offsetWidth*100.0;
                     if(canvasId == layoutCol -2){
-                        var p2 =  (styleData.reviewCanvas.left + reviewCanvas.innerWidth() - e.clientX); // 要計算
+                        var p2 =  (styleData.reviewCanvas.left + reviewCanvas.innerWidth() - CanvasSepWid - e.clientX); 
                     } else {
-                        var p2 =  (lEsList[canvasId +2].offset().left - e.clientX); // 要計算
+                        var p2 =  (lEsList[canvasId +2].offset().left - CanvasSepWid - e.clientX); 
                     }
                     //p2 = p2/reviewCanvas.offsetWidth*100.0;
 
@@ -237,13 +249,13 @@ var glsl_review = function(isShow = true, option = {}){
                     }
 
                     //setStyleElement(lEsList[canvasId], 'width', `${p}%`);
-                    lEsList[canvasId].width = p;
+                    lEsList[canvasId].width = (p/canvasWidth * 100.0) + '%';
                     //setStyleElement(tabAriaList[canvasId], 'width', `${p}%`);
-                    tabAriaList[canvasId].width = p;
+                    tabAriaList[canvasId].width = (p + (canvasId > 0 ? CanvasSepWid - TabSepWid : 0)) / canvasWidth * 100.0 + '%';
                     //setStyleElement(lEsList[canvasId + 1], 'width', `${p2}%`);
-                    lEsList[canvasId + 1].width = p2;
+                    lEsList[canvasId + 1].width = (p2 / canvasWidth * 100.0) + '%';
                     //setStyleElement(tabAriaList[canvasId + 1], 'width', `${p2}%`);
-                    tabAriaList[canvasId + 1].width = p2;
+                    tabAriaList[canvasId + 1].width = (p2 + CanvasSepWid - TabSepWid) / canvasWidth * 100.0 + '%';
                     return false;
                 }
 
@@ -252,7 +264,7 @@ var glsl_review = function(isShow = true, option = {}){
                     document.removeEventListener('mouseup', mouseup, false);
                     //setStyleElement(separator, 'left', `${e.clientX - reviewCanvas.getBoundingClientRect().left - 2}px`);
                     
-                    separator.css('left', `${lEsList[canvasId+1].offset().left - styleData.reviewCanvas.left - 2}px`);
+                    // separator.css('left', `${lEsList[canvasId+1].offset().left - styleData.reviewCanvas.left - 2}px`);
                     reviewCanvas.css('cursor', '');
                     reviewCanvas.removeClass('no-user-select');
 
@@ -439,7 +451,7 @@ var glsl_review = function(isShow = true, option = {}){
 
     // i: number, j: lines, l: log
     //this.addFile = function(i, j, l){
-    this.addFile = function(filePath, j, l = "", isStorageSave = true){
+    this.addFile = function(filePath, j, l = "", isStorageSave = true, canvasId = null, status = FILE_STATUS.SHOW){
 
         var fileId = getNextFileId();
 
@@ -558,7 +570,7 @@ var glsl_review = function(isShow = true, option = {}){
         if(IS_SCROLL_PERFORMANCE_UP)
             scrollPerformance(lE);
 
-        var fileId = addFileAndtab(filePath, lE);
+        var fileId = addFileAndtab(filePath, lE, canvasId, status);
        
         var activeWordElem;
 
@@ -633,13 +645,13 @@ var glsl_review = function(isShow = true, option = {}){
         return fileId;
     }
 
-    this.addImageFile = function(filePath, fileData, isStorageSave = true){
+    this.addImageFile = function(filePath, fileData, isStorageSave = true, canvasId = null, status = FILE_STATUS.SHOW){
         var span = _$_.create('span');
 
         var elem = _$_.create('div', '', ['glsl-base-debug']);
         elem.html(['<img class="thumb" src="', fileData,
                                         '" title="', escape(filePath), '"/>'].join(''));
-        var fileId = addFileAndtab(filePath, elem);
+        var fileId = addFileAndtab(filePath, elem, canvasId, status);
 
         if(isStorageSave)
             viewStorage.setFileData(filePath, fileId, fileData);
@@ -656,15 +668,15 @@ var glsl_review = function(isShow = true, option = {}){
 
             var _fileInfo = lastViewData.fileList[i];
             var fileData = viewStorage.getFileData(_fileInfo.fileId);
-            console.log(_fileInfo);
+            console.log(_fileInfo.fileName);
             
             if(fileData && _fileInfo.status != FILE_STATUS.CLOSE){
                 var filePath = fileData.filePath;
                 var s = filePath.split(/\./);
                 if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
-                    this.addImageFile(fileData.filePath, fileData.content);
+                    this.addImageFile(fileData.filePath, fileData.content, false, _fileInfo.canvasId, _fileInfo.status);
                 else 
-                    this.addFile(fileData.filePath, fileData.content, fileData.err, false);
+                    this.addFile(fileData.filePath, fileData.content, fileData.err, false, _fileInfo.canvasId, _fileInfo.status);
             }
         }
     }
@@ -681,7 +693,7 @@ var glsl_review = function(isShow = true, option = {}){
             if(fileData){
                 var s = fileData.filePath.split(/\./);
                 if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
-                    this.addImageFile(fileData.filePath, fileData.content);
+                    this.addImageFile(fileData.filePath, fileData.content, false);
                 else
                     this.addFile(fileData.filePath, fileData.content, fileData.err, false);
 
@@ -908,8 +920,8 @@ var glsl_review = function(isShow = true, option = {}){
 
 
     /* file 関係 */
-    function addFileAndtab(path, viewElement, status = FILE_STATUS.SHOW){
-        var canvasId = appendlEsList(viewElement);
+    function addFileAndtab(path, viewElement, canvasId = null, status = FILE_STATUS.SHOW){
+        var canvasId = appendlEsList(viewElement, canvasId);
 
         var s = path.split('\/');
         var fileName = s[s.length - 1];
@@ -1001,6 +1013,7 @@ var glsl_review = function(isShow = true, option = {}){
 
                 lEm.removeChild(tabElement);
                 tabParent.appendChild(tabElement);
+
                 // 別タブ
                 if(e.offsetY - styleData.topBtns.height > 0){
                    // window.open(location.href + '?a=3', 'sasacas, "resizable=no,scrollbars=yes,status=no"');
@@ -1014,6 +1027,20 @@ var glsl_review = function(isShow = true, option = {}){
                     newWin.focus();
                     changeFileStatus(fileId, FILE_STATUS.CLOSE);
                 } else {
+                    var tabAriaId = 0;
+                    var leftAccuulation = 11;
+                    for(tabAriaId = 0; tabAriaId < tabAriaList.length; tabAriaId++){
+
+                        leftAccuulation  += tabAriaList[tabAriaId].innerWidth() + TabSepWid;
+                        if(e.clientX < leftAccuulation)
+                            break;
+                    }
+
+                    changeFileStatus(fileId, FILE_STATUS.HIDE);
+                    changeFilePosition(fileId, tabAriaId);
+                    tabParent = tabAriaList[tabAriaId];
+                    changeFileStatus(fileId, FILE_STATUS.SHOW);
+
 
                 }
             }
@@ -1061,16 +1088,21 @@ var glsl_review = function(isShow = true, option = {}){
 
     }
 
-    function appendlEsList(elem){
-        var smallestId = 0, smallestNum = 1000;
-        for(var id=0; id<lEsList.length; id++){
-            if(smallestNum > lEsList[id].children().length){
-                smallestNum = lEsList[id].children().length;
-                smallestId = id;
+    function appendlEsList(elem, canvasId = null){
+        if(canvasId == null){
+        
+            var smallestId = 0, smallestNum = 1000;
+            for(var id=0; id<lEsList.length; id++){
+                if(smallestNum > lEsList[id].children().length){
+                    smallestNum = lEsList[id].children().length;
+                    smallestId = id;
+                }
             }
+            
+            canvasId = smallestId;
         }
-        lEsList[smallestId].appendChild(elem);
-        return smallestId;
+        lEsList[canvasId].appendChild(elem);
+        return canvasId;
 
     }
 
@@ -1097,6 +1129,9 @@ var glsl_review = function(isShow = true, option = {}){
     }
 
     function getFileData(id){
+        if(fileList.length < id)
+            return null;
+
         return fileList[id - 1];
     }
 
@@ -1164,6 +1199,28 @@ var glsl_review = function(isShow = true, option = {}){
 
         fileData.status = status;
 
+    }
+
+    function changeFilePosition(fileId, canvasId){
+
+        var fileData = getFileData(fileId);
+        
+        if(!fileData)
+            return false;
+
+        var preCanvasId = fileData.canvasId;
+
+        // dom 更新
+        tabAriaList[preCanvasId].removeChild(fileData.tabElement);
+        tabAriaList[canvasId].appendChild(fileData.tabElement);
+
+        lEsList[preCanvasId].removeChild(fileData.viewElement);
+        lEsList[canvasId].appendChild(fileData.viewElement);
+    
+        // data 更新
+        fileData.canvasId = canvasId;
+
+        return true;
     }
 
     /* cursor */
