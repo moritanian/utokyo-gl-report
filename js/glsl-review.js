@@ -736,11 +736,13 @@ var glsl_review = function(isShow = true, option = {}){
         // column数が多い
         if(newColNum < oldColNum){
             
+            var isSHowFileInNewColumn = hasOpenFile(newColNum - 1);
             // tab, file dom 移動
             fileListLambda(function(fileId, fileData){
                 if(fileData.canvasId >= newColNum){
                     changeFilePosition(fileId, newColNum - 1);
-                    changeFileStatus(fileId, FILE_STATUS.HIDE);
+                    if(isSHowFileInNewColumn && fileData.status == FILE_STATUS.SHOW)
+                        setOneFileStatus(fileId, FILE_STATUS.HIDE);
                 }
             });
 
@@ -1187,7 +1189,6 @@ var glsl_review = function(isShow = true, option = {}){
       
         // file close
         tabC2.addEventListener('click', function(){
-            console.log(fileId);
             changeFileStatus(fileId, FILE_STATUS.CLOSE);
             //changeFileStatus(getNextFileId() - 1, FILE_STATUS.SHOW);
         });
@@ -1266,13 +1267,14 @@ var glsl_review = function(isShow = true, option = {}){
 
     function fileListLambda(lambda){
         for(var fileId = 1; fileId < fileList.length + 1; fileId ++ ){
-            lambda(fileId, getFileData(fileId));
+            if(lambda(fileId, getFileData(fileId)) === false)
+                break;
         }
     }
 
     function changeFileStatus(fileId, status){
 
-        var hasShowFile = false;
+        var hasShowFile = status === FILE_STATUS.SHOW;
         var myCanvasId = getFileData(fileId).canvasId;
 
         for(var id= fileList.length; id > 0; id--){
@@ -1321,6 +1323,7 @@ var glsl_review = function(isShow = true, option = {}){
 
             case FILE_STATUS.HIDE:
                 fileData.tabElement.removeClass('active-tab');
+                fileData.tabElement.show('flex');
                 fileData.viewElement.hide();
                 break;
 
@@ -1355,6 +1358,21 @@ var glsl_review = function(isShow = true, option = {}){
         fileData.canvasId = canvasId;
 
         return true;
+    }
+
+    function hasOpenFile(canvasId){
+
+        var result = false;
+
+        fileListLambda(function(fileId, fileData){
+            if(fileData.canvasId == canvasId && fileData.status == FILE_STATUS.SHOW){
+                result = true;
+                return false;
+            }
+        });
+
+        return result;
+    
     }
 
     /* cursor */
