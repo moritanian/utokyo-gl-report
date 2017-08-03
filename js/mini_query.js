@@ -44,6 +44,12 @@ var _$_ = (function(){
             return this;
         },
 
+        empty: function(){
+            var childrenElements = this.children();
+            for(var i=0; i<childrenElements.length; i++)
+                this.element.removeChild(childrenElements[i]);
+        },
+
         children: function(index){
             if(index === undefined)
                 return this.element.childNodes;

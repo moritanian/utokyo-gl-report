@@ -13,7 +13,7 @@
     <glsl-base>
         <debug value="true"></debug>
         <tab-size value="4"></tab-size>
-        <layout-col value="2"></layout-col>
+        <layout-col value="3"></layout-col>
     </glsl-base>
 
 
@@ -101,7 +101,7 @@
           <div id='folder-btn' class="top-btn">folder</div>
           <div id='view-btn' class="top-btn">
             <div>view</div>
-            <ul id='view-dp-parent'>
+            <ul id='view-dp-parent' class="btn-dp-parent1">
                 <li id="layout-btn">
                   <span class="right-extendable">layout</span>
                   <ul id="layout-dp-parent">
@@ -111,11 +111,16 @@
                       <li class="layout-btn-child" col='4'>Columns: 4</li>
                   </ul>
                 </li>
-                <li><span>identation</span></li>
+                <li><span>indentation</span></li>
                 <li><span>font size </span></li>
             </ul>
           </div>
-          <div id='tool-btn' class="top-btn">tool</div>
+          <div id='tool-btn' class="top-btn">
+            <div>tool</div>
+            <ul id="tool-dp-parent" class="btn-dp-parent1">
+              <li>background image</li>
+            </ul>
+          </div>
           <!--<input type="file" id="file-select" name="files[]" multiple />-->
           <input type="file" id="file-select" name="file" />
           <input type="file" id="folder-select" name="file" webkitdirectory/>
@@ -128,7 +133,6 @@
         
         <div id='canvas-field'>
           <div id="review-canvas"></div>
-          <div id='separator-parent'></div>
           <div class="cursor blinking" id="cursor"></div>
         </div>
 
