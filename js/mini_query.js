@@ -106,6 +106,15 @@ var _$_ = (function(){
             }
         },
 
+        val: function(value){
+            if(value){
+                this.element.value = value;
+                return this;
+            } else {
+                return this.element.value;
+            }
+        },
+
         addId: function(id){
             return this.attr('id', id);
         },
@@ -150,6 +159,11 @@ var _$_ = (function(){
         },
 
         addEventListener: function(event, func, b = false){
+            this.element.addEventListener(event, func, b);
+            return this;
+        },
+
+        on: function(event, func, b = false){
             this.element.addEventListener(event, func, b);
             return this;
         },
@@ -208,7 +222,51 @@ var _$_ = (function(){
                 this.element.innerHTML = t;
             return this;
 
+        },
+
+        changeInput: function(txtFunc, imgFunc){
+            
+            this.addEventListener('change', function(evt){
+                
+                var files = evt.target.files; // FileList object
+
+                for (var i = 0, f; f = files[i]; i++) {
+                    
+                    // Only process image files.
+                    var isImage = f.type.match('image.*');
+
+                    var reader = new FileReader();
+
+                    // Closure to capture the file information.
+                    reader.onload = (function(theFile) {
+
+                        if(isImage){
+
+                            return function(e) {
+                                imgFunc(theFile.name, e.target.result);
+                            };
+
+                        } else {
+
+                            return function(e){
+                                txtFunc(theFile.name, e.target.result);
+                            }
+                        }
+
+                    })(f);
+
+                    // Read in the image file as a data URL.
+                    if(isImage)
+                        reader.readAsDataURL(f);
+                    else {
+                        reader.readAsText(f, 'utf8'); 
+                        //reader.readAsBinaryString(f); 
+                    }
+                }
+            }, false);
+
         }
+
     }
 
     Object.defineProperty(_$_.prototype, "width", {

@@ -28,7 +28,7 @@
         height:100%;
         background-color: black;
       }
-      .back-wall {
+      #back-wall {
         background-image: url(img/Character01_Vis01.png);
         width: 100%;
         height: 100%;
@@ -94,7 +94,7 @@
     <div id="glsl-base-debug-container">
       <div id="glsl-base-debug-normalizer">+</div>
       <div id="glsl-base-debug-main">
-        <div class="back-wall"></div>
+        <div id="back-wall"></div>
         
         <div id="top-btns">
           <div id='file-btn' class="top-btn">file</div>
@@ -102,13 +102,13 @@
           <div id='view-btn' class="top-btn">
             <div>view</div>
             <ul id='view-dp-parent' class="btn-dp-parent1">
-                <li id="layout-btn">
-                  <span class="right-extendable">layout</span>
+                <li id="layout-btn" class="right-extendable">
+                  <span >layout</span>
                   <ul id="layout-dp-parent">
-                      <li class="layout-btn-child" col='1'>Single</li>
-                      <li class="layout-btn-child" col='2'>Columns: 2</li>
-                      <li class="layout-btn-child" col='3'>Columns: 3</li>
-                      <li class="layout-btn-child" col='4'>Columns: 4</li>
+                    <li class="layout-btn-child" col='1'>Single</li>
+                    <li class="layout-btn-child" col='2'>Columns: 2</li>
+                    <li class="layout-btn-child" col='3'>Columns: 3</li>
+                    <li class="layout-btn-child" col='4'>Columns: 4</li>
                   </ul>
                 </li>
                 <li><span>indentation</span></li>
@@ -118,7 +118,14 @@
           <div id='tool-btn' class="top-btn">
             <div>tool</div>
             <ul id="tool-dp-parent" class="btn-dp-parent1">
-              <li>background image</li>
+              <li style="position: relative;"> 
+                <span> background image </span>
+                <input type="file" id="background-select" name="file" />
+              </li>
+              <li id='background-opacity'> 
+                <span class="right-extendable">background opacity </span> 
+                <div id='opacity-range'> <input id='opacity-range-input' type="range" name="range"></div>
+              </li>
             </ul>
           </div>
           <!--<input type="file" id="file-select" name="files[]" multiple />-->

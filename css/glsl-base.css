@@ -36,10 +36,11 @@
   border: solid 1px #6c6a6a;
 }
 
-#glsl-base-debug-main .back-wall {
+#glsl-base-debug-main #back-wall {
   opacity: 0.16;
   background-color: rgba(255, 255, 255, 0.65);
   position: fixed;
+  background-size: cover;
 }
 
 #glsl-base-debug-main #top-btns {
@@ -70,7 +71,8 @@
 
 
 #glsl-base-debug-main #top-btns #file-select,
-#glsl-base-debug-main #top-btns #folder-select {
+#glsl-base-debug-main #top-btns #folder-select, 
+#glsl-base-debug-main #top-btns #background-select {
   opacity: 0;
   position: absolute;
   width: 48px;
@@ -91,23 +93,25 @@
   display: none;
 }
 
+#glsl-base-debug-main .top-btn .btn-dp-parent1 li {
+  padding: 3px 0px 3px;
+}
+
 #glsl-base-debug-main .top-btn .btn-dp-parent1 li:hover {
   background-color: rgba(0, 242, 207, 0.15);
 }
 
 #glsl-base-debug-main .top-btn ul li span {
   text-align: left;
-  padding: le;
   float: left;
   left: 20px;
   padding-left: 20px;
 }
 
-#glsl-base-debug-main  .top-btn .btn-dp-parent1  .right-extendable::before {
+#glsl-base-debug-main  .top-btn .btn-dp-parent1  .right-extendable::after {
   z-index: 1;
-  position: absolute;
   right: 1px;
-  top: -1px;
+  top: 1px;
   font-family: cursive;
   line-height: 23px;
   pointer-events: none;
@@ -117,15 +121,36 @@
   /* font-weight: 900; */
   height: 20px;
   line-height: 20px;
+  position: absolute;
 }
 
-#glsl-base-debug-main  .top-btn .btn-dp-parent1  #layout-dp-parent {
+#glsl-base-debug-main .top-btn .btn-dp-parent1  #layout-dp-parent {
   background-color: rgba(255, 255, 255, 0.97);
   position: absolute;
   left: 120px;
   width: 100%;
   top: 0px;
   box-shadow: 0px 1px 2px #2f2f2f;
+  display: none;
+}
+
+#glsl-base-debug-container #top-btns #tool-dp-parent{
+    width: 180px;
+}
+
+#glsl-base-debug-container #top-btns #background-select {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#glsl-base-debug-container #top-btns #opacity-range {
+  position: absolute;
+  left: 180px;
+  top: 30px;
+  background-color: white;
+  padding: 5px;
   display: none;
 }
 
@@ -156,7 +181,6 @@
   cursor: pointer;
   user-select: none;
   margin-top: 6px;
-
   display: flex;
 
 }

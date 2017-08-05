@@ -52,7 +52,10 @@ var glsl_review = function(isShow = true, option = {}){
         },
 
         setLastViewData: function(){
-            this._setObj('lastViewData', {fileList: fileList});
+            this._setObj('lastViewData', {
+                fileList: fileList,
+                option: option
+            });
         },
 
         getLastViewData: function(){
@@ -154,7 +157,7 @@ var glsl_review = function(isShow = true, option = {}){
     var reviewCanvas = _$_('#review-canvas');
     var tabAriaParent = _$_('#top-tabs');
     var topBtnParent = _$_('#top-btns');
-    var layoutCol = option.layoutCol || 1;
+    option.layoutCol = option.layoutCol || 1;
 
     var separatorList = [];
     var lEsList = []; // ファイルビューエリアのリスト(カラム数の要素)
@@ -213,6 +216,12 @@ var glsl_review = function(isShow = true, option = {}){
         fileBtn.removeClass('hover');
     });
 
+    fselect.changeInput(function(fileName, fileData){
+        Instance.addFile(fileName, fileData);
+    }, function(fileName, fileData){
+        Instance.addImageFile(fileName, fileData);
+    });
+
     var folderBtn = _$_('#folder-btn');
    
     var folderselect = _$_('#folder-select');
@@ -265,6 +274,11 @@ var glsl_review = function(isShow = true, option = {}){
     
     var toolBtn = _$_('#tool-btn');
     var toolDpParent = _$_('#tool-dp-parent');
+    var backgroundWall = _$_('#back-wall');
+    var backgroundSelect = _$_('#background-select');
+    var backgroundOpacity = _$_('#background-opacity');
+    var opacityBar = _$_('#opacity-range');
+    var opacityBarInput = _$_('#opacity-range-input');
 
     toolBtn.click(function(){
         toolDpParent.show();
@@ -273,52 +287,46 @@ var glsl_review = function(isShow = true, option = {}){
         toolDpParent.hide();
     });
 
+    var setBackgroundImage = function(fileName, fileData){
+        backgroundWall.css('background-image', `url(${fileData})`);
+        backgroundWall.attr('title', escape(fileName));
+        option.backgroundName = fileName;
+        option.backgroundUrl = fileData;
+        option.useBackgrounfLocalImage = true;
+    }
 
-    /*
-    fselect.addEventListener('click', function(evt){
-        return true;
-    });*/
+    backgroundSelect.changeInput(function(){
+    }, setBackgroundImage);
 
-    fselect.addEventListener('change', function(evt){
-
-        var files = evt.target.files; // FileList object
-
-        for (var i = 0, f; f = files[i]; i++) {
-            // Only process image files.
-            var isImage = f.type.match('image.*');
-
-            var reader = new FileReader();
-
-            // Closure to capture the file information.
-            reader.onload = (function(theFile) {
-
-                if(isImage){
-
-                    return function(e) {
-                        // Render thumbnail.
-                        Instance.addImageFile(theFile.name, e.target.result);
-
-                    };
-
-                } else {
-
-                    return function(e){
-                        Instance.addFile(theFile.name, e.target.result);
-                        //addFileAndtab(theFile.name, elem);
-                    }
-                }
-
-            })(f);
-
-            // Read in the image file as a data URL.
-            if(isImage)
-                reader.readAsDataURL(f);
-            else {
-                reader.readAsText(f, 'utf8'); 
-                //reader.readAsBinaryString(f); 
+    backgroundOpacityHoverFlg = false;
+    backgroundOpacity.mouseover(function(){
+        backgroundOpacityHoverFlg = true;
+        
+        setTimeout(function(){
+            if(backgroundOpacityHoverFlg){
+                opacityBar.show();
             }
-        }
-    }, false);
+        }, 500);
+
+    }).mouseleave(function(){
+        backgroundOpacityHoverFlg = false;
+        opacityBar.hide();
+    });
+
+    var setBackgroundOpacity = function(val){
+        backgroundWall.css('opacity', val/ 100.0);
+        option.backgroundOpacity = val;
+        option.useBackgroundOpacity = true;
+        opacityBarInput.val(val);
+    };
+
+    opacityBarInput.addEventListener('change', function(){
+        setBackgroundOpacity( _$_(this).val());
+    }).on('input', function(){
+        setBackgroundOpacity( _$_(this).val());
+    });
+
+
 
     _$_('#minimize-btn').click(function(){    
         lEm.hide();
@@ -554,24 +562,52 @@ var glsl_review = function(isShow = true, option = {}){
     this.recoverLastView = function(){
         var lastViewData = viewStorage.getLastViewData();
         
-        if(!lastViewData || !lastViewData.fileList)
+        if(!lastViewData )
             return false;
 
-        for(var i = 0; i < lastViewData.fileList.length; i++){
+        if(lastViewData.fileList){
 
-            var _fileInfo = lastViewData.fileList[i];
-            var fileData = viewStorage.getFileData(_fileInfo.fileId);
-            console.log(_fileInfo.fileName);
-            
-            if(fileData && _fileInfo.status != FILE_STATUS.CLOSE){
-                var filePath = fileData.filePath;
-                var s = filePath.split(/\./);
-                if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
-                    this.addImageFile(fileData.filePath, fileData.content, false, _fileInfo.canvasId, _fileInfo.status);
-                else 
-                    this.addFile(fileData.filePath, fileData.content, fileData.err, false, _fileInfo.canvasId, _fileInfo.status);
+            for(var i = 0; i < lastViewData.fileList.length; i++){
+
+                var _fileInfo = lastViewData.fileList[i];
+                var fileData = viewStorage.getFileData(_fileInfo.fileId);
+                console.log(_fileInfo.fileName);
+                
+                if(fileData && _fileInfo.status != FILE_STATUS.CLOSE){
+                    var filePath = fileData.filePath;
+                    var s = filePath.split(/\./);
+                    if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
+                        this.addImageFile(fileData.filePath, fileData.content, false, _fileInfo.canvasId, _fileInfo.status);
+                    else 
+                        this.addFile(fileData.filePath, fileData.content, fileData.err, false, _fileInfo.canvasId, _fileInfo.status);
+                }
             }
+
+            if(lastViewData.option){
+                
+                if(lastViewData.option.layoutCol){
+                    option.layoutCol = lastViewData.option.layoutCol;
+                }
+
+                if(lastViewData.option.useBackgrounfLocalImage){
+
+                    option.useBackgrounfLocalImage = true;
+                    option.backgroundUrl = lastViewData.option.backgroundUrl;
+                    option.backgroundOpacity = lastViewData.option.backgroundOpacity;
+                    setBackgroundImage(option.backgroundName, option.backgroundUrl);
+
+                }
+
+                if(lastViewData.option.useBackgroundOpacity){
+
+                    option.useBackgroundOpacity = true;
+                    option.backgroundOpacity = lastViewData.option.backgroundOpacity;
+                    setBackgroundOpacity(option.backgroundOpacity);
+                }
+            }
+
         }
+
     }
 
      // winName
@@ -603,7 +639,7 @@ var glsl_review = function(isShow = true, option = {}){
     /* dom setup */
     function initField(){
 
-        for(var id=0; id<layoutCol; id++){
+        for(var id=0; id<option.layoutCol; id++){
 
             _addOneFiledLayoutCol(id);
           
@@ -640,7 +676,7 @@ var glsl_review = function(isShow = true, option = {}){
 
                     var p = (e.clientX - lEsList[canvasId - 1].offset().left);
                     //p = p/reviewCanvas.offsetWidth*100.0;
-                    if(canvasId == layoutCol - 1){
+                    if(canvasId == option.layoutCol - 1){
                         var p2 =  (styleData.reviewCanvas.left + reviewCanvas.innerWidth() - CanvasSepWid - e.clientX); 
                     } else {
                         var p2 =  (lEsList[canvasId + 1].offset().left - CanvasSepWid - e.clientX); 
@@ -710,7 +746,7 @@ var glsl_review = function(isShow = true, option = {}){
 
         // # TODO 外側の margin-left + margin-right = 20 計算でだしたい
        
-        var wid = (canvasWidth + CanvasSepWid) / layoutCol - CanvasSepWid; 
+        var wid = (canvasWidth + CanvasSepWid) / option.layoutCol - CanvasSepWid; 
         lEs.width = (wid / canvasWidth * 100.0) + '%';
         
         lEsList.push(lEs);
@@ -728,7 +764,7 @@ var glsl_review = function(isShow = true, option = {}){
     }
 
     function changeFiledLayoutCol(newColNum) {
-        var oldColNum = layoutCol;
+        var oldColNum = option.layoutCol;
 
         var canvasWidth = styleData.reviewCanvas.width;
         
@@ -773,13 +809,13 @@ var glsl_review = function(isShow = true, option = {}){
 
             }
 
-            layoutCol = newColNum;
+            option.layoutCol = newColNum;
 
 
         // column 数が少ない
         } else {
 
-            layoutCol = newColNum;
+            option.layoutCol = newColNum;
 
 
             for(var colId = 0; colId < oldColNum; colId ++ ){
