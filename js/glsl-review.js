@@ -26,6 +26,7 @@ var glsl_review = function(isShow = true, option = {}){
     var fileList = [];
 
     var IS_SCROLL_PERFORMANCE_UP = true;
+    const SCROLL_CONTROLLER_KEY = Symbol('SCROLL_CONTROLLER_KEY');
 
       /* strage access */
     var viewStorage = {
@@ -469,7 +470,7 @@ var glsl_review = function(isShow = true, option = {}){
 
         // スクロール性能向上
         if(IS_SCROLL_PERFORMANCE_UP)
-            scrollPerformance(lE);
+            lE[SCROLL_CONTROLLER_KEY] = new ScrollController(lE);
 
         var fileId = addFileAndtab(filePath, lE, canvasId, status);
        
@@ -1203,6 +1204,7 @@ var glsl_review = function(isShow = true, option = {}){
                     tabParent = tabAriaList[tabAriaId];
                     changeFileStatus(fileId, FILE_STATUS.SHOW);
 
+                    fileData.viewElement[SCROLL_CONTROLLER_KEY].scrollCurrentPosition();
 
                 }
             }
@@ -1463,8 +1465,12 @@ var glsl_review = function(isShow = true, option = {}){
         これにより600行のスクリプトの update layer tree の1サイクルあたりの時間が
         200ms から　50ms ほどに改善
      */
-    function scrollPerformance(lE){
-        //return;
+
+    function ScrollController(lE){
+        
+        var instance = this;
+        this.sY = 0.0;
+
         var ticking = false, allShowState = 0;
         var lEchildrenLength = lE.children().length;
         var showLineNum = Math.ceil( styleData.reviewCanvas.height / lineHeight); // 40
@@ -1480,15 +1486,15 @@ var glsl_review = function(isShow = true, option = {}){
         }
         
         lE.addEventListener('scroll', function(e) {
-          var sY = lE.scrollTop;
+          instance.sY = lE.scrollTop;
             if (!ticking) {
                 
                 window.requestAnimationFrame(function() {
 
                     ticking = false;
 
-                    //console.log(sY);
-                    var startId = Math.ceil(sY / 15) - 1 ;
+                    //console.log(instance.sY);
+                    var startId = Math.ceil(instance.sY / 15) - 1 ;
                     if(startId < 0)
                         startId = 0;
                     
@@ -1543,9 +1549,16 @@ var glsl_review = function(isShow = true, option = {}){
 
             return true;
         });
-        
-    }
 
+        this.scrollCurrentPosition = function(){
+            this.scroll(this.sY);
+        }
+
+        this.scroll = function(value){
+            lE.scrollTop = value;
+        }
+
+    }
 
     /* スタイルデータ取得 */
     function getStyleData () {
