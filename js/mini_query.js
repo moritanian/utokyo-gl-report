@@ -224,7 +224,7 @@ var _$_ = (function(){
 
         },
 
-        changeInput: function(txtFunc, imgFunc){
+        changeInput: function(txtFunc, imgFunc, pdfFunc){
             
             this.addEventListener('change', function(evt){
                 
@@ -234,6 +234,7 @@ var _$_ = (function(){
                     
                     // Only process image files.
                     var isImage = f.type.match('image.*');
+                    var isPdf = f.type.match('pdf.*');
 
                     var reader = new FileReader();
 
@@ -244,6 +245,12 @@ var _$_ = (function(){
 
                             return function(e) {
                                 imgFunc(theFile.name, e.target.result);
+                            };
+
+                        } else if(isPdf){
+
+                            return function(e) {
+                                pdfFunc(theFile.name, e.target.result);
                             };
 
                         } else {

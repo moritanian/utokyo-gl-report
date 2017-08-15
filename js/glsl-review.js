@@ -28,6 +28,12 @@ var glsl_review = function(isShow = true, option = {}){
     var IS_SCROLL_PERFORMANCE_UP = true;
     const SCROLL_CONTROLLER_KEY = Symbol('SCROLL_CONTROLLER_KEY');
 
+    // file callback function keys
+    const FILE_CALLBACK_KEYS = {
+        RESIZE: Symbol('RESIZE'),
+        TAB_DRAG_END: Symbol('TAB_DRAG_END')
+    };
+
       /* strage access */
     var viewStorage = {
         getNewWinName: function(){
@@ -176,180 +182,6 @@ var glsl_review = function(isShow = true, option = {}){
         "reviewCanvas": {}
     };
 
-    var cursorElement, cursorX, cursorY;
-    setCursorListener();
-
-    var catchupEvent = function(e){
-        console.log(e);
-        return false;
-
-    }
-
-    // drag対策 # TODO ずっとはつどうしたくない
-    document.ondragend = function(){
-        return false;
-    };
-
-    document.ondragstart = function(){
-        return false;
-    };
-    
-    initField();
-
-    // top btns  
-    var fileBtn = _$_('#file-btn');
-    /*
-    fileBtn.addEventListener('click', function(){
-        console.log('fileBtn');
-        var evt = document.createEvent("HTMLEvents");
-        evt.initEvent('click', true, true ); // event type, bubbling, cancelable
-       return fselect.dispatchEvent(evt);
-    });
-    */
-
-    var fselect = _$_('#file-select');
-
-    fselect.mouseover(function(){
-        fileBtn.addClass('hover');
-    });
-
-    fselect.mouseout(function(){
-        fileBtn.removeClass('hover');
-    });
-
-    fselect.changeInput(function(fileName, fileData){
-        Instance.addFile(fileName, fileData);
-    }, function(fileName, fileData){
-        Instance.addImageFile(fileName, fileData);
-    });
-
-    var folderBtn = _$_('#folder-btn');
-   
-    var folderselect = _$_('#folder-select');
-
-    folderselect.mouseover(function(){
-        folderBtn.addClass('hover');
-    });
-
-    folderselect.mouseout(function(){
-        folderBtn.removeClass('hover');
-    });
-
-    var viewBtn = _$_('#view-btn');
-    var viewDpParent = _$_('#view-dp-parent');
-
-    viewBtn.click(function(){
-        viewDpParent.show();
-    });
-    viewBtn.mouseleave(function(){
-        viewDpParent.hide();
-    });
-
-    var layoutBtn = _$_('#layout-btn');
-    var layoutDpParent = _$_('#layout-dp-parent');
-
-    var layoutBtnHoveringFlg = false;
-    layoutBtn.mouseover(function(){
-
-        layoutBtnHoveringFlg = true;
-        
-        setTimeout(function(){
-            if(layoutBtnHoveringFlg){
-                layoutDpParent.show();
-            }
-        }, 500);
-
-    }).mouseleave( function(){
-        layoutBtnHoveringFlg = false;
-        layoutDpParent.hide();
-    });
-
-    var layoutChildrenBtns = document.getElementsByClassName('layout-btn-child');
-    for(var i=0; i<layoutChildrenBtns.length; i++){
-        layoutChildrenBtns[i].addEventListener('click', function(){
-            var col = _$_(this).attr('col');
-            changeFiledLayoutCol(col); 
-            layoutDpParent.hide();
-        })  
-    }
-    
-    var toolBtn = _$_('#tool-btn');
-    var toolDpParent = _$_('#tool-dp-parent');
-    var backgroundWall = _$_('#back-wall');
-    var backgroundSelect = _$_('#background-select');
-    var backgroundOpacity = _$_('#background-opacity');
-    var opacityBar = _$_('#opacity-range');
-    var opacityBarInput = _$_('#opacity-range-input');
-
-    toolBtn.click(function(){
-        toolDpParent.show();
-    });
-    toolBtn.mouseleave(function(){
-        toolDpParent.hide();
-    });
-
-    var setBackgroundImage = function(fileName, fileData){
-        backgroundWall.css('background-image', `url(${fileData})`);
-        backgroundWall.attr('title', escape(fileName));
-        option.backgroundName = fileName;
-        option.backgroundUrl = fileData;
-        option.useBackgrounfLocalImage = true;
-    }
-
-    backgroundSelect.changeInput(function(){
-    }, setBackgroundImage);
-
-    backgroundOpacityHoverFlg = false;
-    backgroundOpacity.mouseover(function(){
-        backgroundOpacityHoverFlg = true;
-        
-        setTimeout(function(){
-            if(backgroundOpacityHoverFlg){
-                opacityBar.show();
-            }
-        }, 500);
-
-    }).mouseleave(function(){
-        backgroundOpacityHoverFlg = false;
-        opacityBar.hide();
-    });
-
-    var setBackgroundOpacity = function(val){
-        backgroundWall.css('opacity', val/ 100.0);
-        option.backgroundOpacity = val;
-        option.useBackgroundOpacity = true;
-        opacityBarInput.val(val);
-    };
-
-    opacityBarInput.addEventListener('change', function(){
-        setBackgroundOpacity( _$_(this).val());
-    }).on('input', function(){
-        setBackgroundOpacity( _$_(this).val());
-    });
-
-
-
-    _$_('#minimize-btn').click(function(){    
-        lEm.hide();
-        lEn.show();
-    });
-      
-    lEn.click(function(){
-        lEm.show();
-        lEn.hide();
-    });
-
-        
-    // needed dialog elements
-    //var errContentElement = createElement('div', '', ['err-content']);
-    var errContentElement = _$_.create('div', '', ['err-content']);
-    
-    errContentElement.hide();
-    _$_('body').appendChild(errContentElement);
-
-    var pathIndicatorDialog = _$_.create('div', '', ['path-indicator-dialog']);
-    pathIndicatorDialog.hide();
-    _$_('body').appendChild(pathIndicatorDialog);
 
     // i: number, j: lines, l: log
     //this.addFile = function(i, j, l){
@@ -548,19 +380,302 @@ var glsl_review = function(isShow = true, option = {}){
     }
 
     this.addImageFile = function(filePath, fileData, isStorageSave = true, canvasId = null, status = FILE_STATUS.SHOW){
-        var span = _$_.create('span');
 
         var elem = _$_.create('div', '', ['glsl-base-debug']);
-        elem.html(['<img class="thumb" src="', fileData,
-                                        '" title="', escape(filePath), '"/>'].join(''));
-        var fileId = addFileAndtab(filePath, elem, canvasId, status);
+        
+        var imgElem = _$_.create('img', '',['image-file']);
+
+        var originalWidth = 0;
+        var originalHeight = 0;
+
+        function getOriginalSize(){
+            
+            imgElem.width = 'auto';
+            originalWidth = imgElem.innerWidth();
+            originalHeight = imgElem.innerHeight();
+            imgElem.width = '';
+        
+        }
+
+        imgElem.on('load', updateSizeDisplay);
+
+        imgElem.attr('src', fileData);
+        imgElem.attr('title', escape(filePath));
+
+        var sizeDisplay  = _$_.create('div', '', ['image-size-display']);
+        var sizeContent = _$_.create('span');
+        var perContent = _$_.create('span', '', ['per-content']);
+         
+       
+
+        // size と拡大率表示
+        var sizeDisplayStatus = 0;
+        function updateSizeDisplay(){
+
+            if(originalHeight == 0 || originalWidth == 0)
+                getOriginalSize();
+
+            var sizePer = Math.ceil(imgElem.innerWidth()/ originalWidth * 100);
+            sizeContent.text(`${originalWidth}px × ${originalHeight}px`);
+            perContent.text(`${sizePer}%`);
+
+            const Timeout = 1000;
+
+            function timeoutFunc(){
+            
+                if(sizeDisplayStatus == 1){
+            
+                    sizeDisplay.hide();
+                    sizeDisplayStatus = 0;    
+                    
+                } else if(sizeDisplayStatus == 2){
+                       
+                    sizeDisplayStatus = 1;
+
+                    setTimeout(timeoutFunc, Timeout);
+
+                }
+            } 
+
+            if(sizeDisplayStatus == 0){                     
+            
+                sizeDisplay.show();
+                sizeDisplayStatus = 1;
+
+                setTimeout(timeoutFunc, Timeout); 
+
+            } else if(sizeDisplayStatus == 1){
+                sizeDisplayStatus = 2;
+            }
+            
+        }
+       
+        sizeDisplay.appendChild(sizeContent);
+        sizeDisplay.appendChild(perContent);
+        elem.appendChild(imgElem);
+        elem.appendChild(sizeDisplay);
+
+        var callback = {
+            [FILE_CALLBACK_KEYS.RESIZE] : updateSizeDisplay,
+            [FILE_CALLBACK_KEYS.TAB_DRAG_END] : updateSizeDisplay
+        };
+
+        var fileId = addFileAndtab(filePath, elem, canvasId, status, callback);
+
+        if(isStorageSave)
+            viewStorage.setFileData(filePath, fileId, fileData);
+
+
+    }
+
+    this.addPdfFile = function(filePath, fileData, isStorageSave = true, canvasId = null, status = FILE_STATUS.SHOW){
+        //var elem = _$_.create('div', '', ['glsl-base-debug']);
+        
+        var iframe = _$_.create('iframe', '', ['pdf-frame'] );
+        const ViewerSrc = './pdfjs-1.7.225-dist/web/viewer.html';
+        var pdfSrc = 'http://localhost/CVwork/sample_files/sample.pdf';
+        iframe.attr('src', `${ViewerSrc}?file=${pdfSrc}`);
+
+        //elem.appendChild(iframe);
+
+        var fileId = addFileAndtab(filePath, iframe, canvasId, status);
 
         if(isStorageSave)
             viewStorage.setFileData(filePath, fileId, fileData);
 
     }
 
-    this.recoverLastView = function(){
+    
+    var cursorElement, cursorX, cursorY;
+    setCursorListener();
+
+    var catchupEvent = function(e){
+        console.log(e);
+        return false;
+
+    }
+
+    // drag対策 # TODO ずっとはつどうしたくない
+    document.ondragend = function(){
+        return false;
+    };
+
+    document.ondragstart = function(){
+        return false;
+    };
+    
+
+    // top btns  
+    var fileBtn = _$_('#file-btn');
+    /*
+    fileBtn.addEventListener('click', function(){
+        console.log('fileBtn');
+        var evt = document.createEvent("HTMLEvents");
+        evt.initEvent('click', true, true ); // event type, bubbling, cancelable
+       return fselect.dispatchEvent(evt);
+    });
+    */
+
+    var fselect = _$_('#file-select');
+
+    fselect.mouseover(function(){
+        fileBtn.addClass('hover');
+    });
+
+    fselect.mouseout(function(){
+        fileBtn.removeClass('hover');
+    });
+
+    fselect.changeInput(function(fileName, fileData){
+        Instance.addFile(fileName, fileData);
+    }, function(fileName, fileData){
+        Instance.addImageFile(fileName, fileData);
+    }, function(fileName, fileData){
+        Instance.addPdfFile(fileName, fileData);
+    });
+
+    var folderBtn = _$_('#folder-btn');
+   
+    var folderselect = _$_('#folder-select');
+
+    folderselect.mouseover(function(){
+        folderBtn.addClass('hover');
+    });
+
+    folderselect.mouseout(function(){
+        folderBtn.removeClass('hover');
+    });
+
+    var viewBtn = _$_('#view-btn');
+    var viewDpParent = _$_('#view-dp-parent');
+
+    viewBtn.click(function(){
+        viewDpParent.show();
+    });
+    viewBtn.mouseleave(function(){
+        viewDpParent.hide();
+    });
+
+    var layoutBtn = _$_('#layout-btn');
+    var layoutDpParent = _$_('#layout-dp-parent');
+
+    var layoutBtnHoveringFlg = false;
+    layoutBtn.mouseover(function(){
+
+        layoutBtnHoveringFlg = true;
+        
+        setTimeout(function(){
+            if(layoutBtnHoveringFlg){
+                layoutDpParent.show();
+            }
+        }, 500);
+
+    }).mouseleave( function(){
+        layoutBtnHoveringFlg = false;
+        layoutDpParent.hide();
+    });
+
+
+    var toolBtn = _$_('#tool-btn');
+    var toolDpParent = _$_('#tool-dp-parent');
+    var backgroundWall = _$_('#back-wall');
+    var backgroundSelect = _$_('#background-select');
+    var backgroundOpacity = _$_('#background-opacity');
+    var opacityBar = _$_('#opacity-range');
+    var opacityBarInput = _$_('#opacity-range-input');
+
+    toolBtn.click(function(){
+        toolDpParent.show();
+    });
+    toolBtn.mouseleave(function(){
+        toolDpParent.hide();
+    });
+
+    var setBackgroundImage = function(fileName, fileData){
+        backgroundWall.css('background-image', `url(${fileData})`);
+        backgroundWall.attr('title', escape(fileName));
+        option.backgroundName = fileName;
+        option.backgroundUrl = fileData;
+        option.useBackgrounfLocalImage = true;
+    }
+
+    backgroundSelect.changeInput(function(){
+    }, setBackgroundImage);
+
+    backgroundOpacityHoverFlg = false;
+    backgroundOpacity.mouseover(function(){
+        backgroundOpacityHoverFlg = true;
+        
+        setTimeout(function(){
+            if(backgroundOpacityHoverFlg){
+                opacityBar.show();
+            }
+        }, 500);
+
+    }).mouseleave(function(){
+        backgroundOpacityHoverFlg = false;
+        opacityBar.hide();
+    });
+
+    var setBackgroundOpacity = function(val){
+        backgroundWall.css('opacity', val/ 100.0);
+        option.backgroundOpacity = val;
+        option.useBackgroundOpacity = true;
+        opacityBarInput.val(val);
+    };
+
+    opacityBarInput.addEventListener('change', function(){
+        setBackgroundOpacity( _$_(this).val());
+    }).on('input', function(){
+        setBackgroundOpacity( _$_(this).val());
+    });
+
+
+    if(option.recoverLastView){
+        recoverLastOption();
+    }
+
+    initField();
+
+   
+
+    var layoutChildrenBtns = document.getElementsByClassName('layout-btn-child');
+    for(var i=0; i<layoutChildrenBtns.length; i++){
+        layoutChildrenBtns[i].addEventListener('click', function(){
+            var col = _$_(this).attr('col');
+            changeFiledLayoutCol(col); 
+            layoutDpParent.hide();
+        })  
+    }
+    
+    _$_('#minimize-btn').click(function(){    
+        lEm.hide();
+        lEn.show();
+    });
+      
+    lEn.click(function(){
+        lEm.show();
+        lEn.hide();
+    });
+
+        
+    // needed dialog elements
+    //var errContentElement = createElement('div', '', ['err-content']);
+    var errContentElement = _$_.create('div', '', ['err-content']);
+    
+    errContentElement.hide();
+    _$_('body').appendChild(errContentElement);
+
+    var pathIndicatorDialog = _$_.create('div', '', ['path-indicator-dialog']);
+    pathIndicatorDialog.hide();
+    _$_('body').appendChild(pathIndicatorDialog);
+
+    if(option.recoverLastView){
+        recoverLastFiles();
+    }
+
+    function recoverLastFiles() {
+
         var lastViewData = viewStorage.getLastViewData();
         
         if(!lastViewData )
@@ -577,36 +692,46 @@ var glsl_review = function(isShow = true, option = {}){
                 if(fileData && _fileInfo.status != FILE_STATUS.CLOSE){
                     var filePath = fileData.filePath;
                     var s = filePath.split(/\./);
-                    if(s[s.length - 1] === 'png' || s[s.length - 1] === 'jpg') 
-                        this.addImageFile(fileData.filePath, fileData.content, false, _fileInfo.canvasId, _fileInfo.status);
+                    var extension = s[s.length - 1];
+                    if(extension === 'png' || extension === 'jpg') 
+                        Instance.addImageFile(fileData.filePath, fileData.content, false, _fileInfo.canvasId, _fileInfo.status);
+                    else if(extension === 'pdf')
+                        Instance.addPdfFile(fileData.filePath, fileData.content, false, _fileInfo.canvasId, _fileInfo.status);
                     else 
-                        this.addFile(fileData.filePath, fileData.content, fileData.err, false, _fileInfo.canvasId, _fileInfo.status);
+                        Instance.addFile(fileData.filePath, fileData.content, fileData.err, false, _fileInfo.canvasId, _fileInfo.status);
                 }
             }
+        } 
+    }
 
-            if(lastViewData.option){
-                
-                if(lastViewData.option.layoutCol){
-                    option.layoutCol = lastViewData.option.layoutCol;
-                }
+    function recoverLastOption() {
+        
+        var lastViewData = viewStorage.getLastViewData();
+        
+        if(!lastViewData )
+            return false;
 
-                if(lastViewData.option.useBackgrounfLocalImage){
-
-                    option.useBackgrounfLocalImage = true;
-                    option.backgroundUrl = lastViewData.option.backgroundUrl;
-                    option.backgroundOpacity = lastViewData.option.backgroundOpacity;
-                    setBackgroundImage(option.backgroundName, option.backgroundUrl);
-
-                }
-
-                if(lastViewData.option.useBackgroundOpacity){
-
-                    option.useBackgroundOpacity = true;
-                    option.backgroundOpacity = lastViewData.option.backgroundOpacity;
-                    setBackgroundOpacity(option.backgroundOpacity);
-                }
+        if(lastViewData.option){
+            
+            if(lastViewData.option.layoutCol){
+                option.layoutCol = lastViewData.option.layoutCol;
             }
 
+            if(lastViewData.option.useBackgrounfLocalImage){
+
+                option.useBackgrounfLocalImage = true;
+                option.backgroundUrl = lastViewData.option.backgroundUrl;
+                option.backgroundOpacity = lastViewData.option.backgroundOpacity;
+                setBackgroundImage(option.backgroundName, option.backgroundUrl);
+
+            }
+
+            if(lastViewData.option.useBackgroundOpacity){
+
+                option.useBackgroundOpacity = true;
+                option.backgroundOpacity = lastViewData.option.backgroundOpacity;
+                setBackgroundOpacity(option.backgroundOpacity);
+            }
         }
 
     }
@@ -700,6 +825,25 @@ var glsl_review = function(isShow = true, option = {}){
                     tabAriaList[canvasId - 1].width = (p + (canvasId - 1 > 0 ? CanvasSepWid - TabSepWid : 0)) / canvasWidth * 100.0 + '%';
                     lEsList[canvasId].width = (p2 / canvasWidth * 100.0) + '%';
                     tabAriaList[canvasId].width = (p2 + CanvasSepWid - TabSepWid) / canvasWidth * 100.0 + '%';
+
+                    // resize callback
+                    (function execResizeCallback(_canvasId){
+                        
+                        fileListLambda(function(fileId, fileData){
+                            if(fileData.canvasId != _canvasId && fileData.canvasId != _canvasId - 1)
+                                return ;
+
+                            if(fileData.status != FILE_STATUS.SHOW)
+                                return ;
+
+                            if(fileData.callback && fileData.callback[FILE_CALLBACK_KEYS.RESIZE]){
+                                fileData.callback[FILE_CALLBACK_KEYS.RESIZE]();
+                            } 
+
+                        });
+
+                    })(canvasId);
+                   
                     return false;
                 }
 
@@ -1074,7 +1218,8 @@ var glsl_review = function(isShow = true, option = {}){
 
 
     /* file 関係 */
-    function addFileAndtab(path, viewElement, canvasId = null, status = FILE_STATUS.SHOW){
+    function addFileAndtab(path, viewElement, canvasId = null, status = FILE_STATUS.SHOW, callback){
+
         var canvasId = appendlEsList(viewElement, canvasId);
 
         var s = path.split('\/');
@@ -1094,14 +1239,19 @@ var glsl_review = function(isShow = true, option = {}){
         tabElement.appendChild(tabC1);
         tabElement.appendChild(tabC2);
 
-        var fileId = addFileList(fileName, path, tabElement, viewElement, status, canvasId);
+        var fileId = addFileList(fileName, path, tabElement, viewElement, status, canvasId, callback);
         
 
         // hover 時にpath名表示
         (function setPathIndicatorListener(tab, tabElement){
             var isHovering = false;
             var requiredHoveringTime = 1000;
+            
             tab.mouseover(function(e){
+            
+                if(isHovering)
+                    return;
+
                 isHovering = true;
                 setTimeout(function(){
                     if(tabElement.hasClass('dragging-tab')){
@@ -1204,7 +1354,12 @@ var glsl_review = function(isShow = true, option = {}){
                     tabParent = tabAriaList[tabAriaId];
                     changeFileStatus(fileId, FILE_STATUS.SHOW);
 
-                    fileData.viewElement[SCROLL_CONTROLLER_KEY].scrollCurrentPosition();
+                    if(fileData.viewElement[SCROLL_CONTROLLER_KEY])
+                        fileData.viewElement[SCROLL_CONTROLLER_KEY].scrollCurrentPosition();
+
+                    if(fileData.callback && fileData.callback[FILE_CALLBACK_KEYS.TAB_DRAG_END]){
+                        fileData.callback[FILE_CALLBACK_KEYS.TAB_DRAG_END]();
+                    }
 
                 }
             }
@@ -1246,7 +1401,6 @@ var glsl_review = function(isShow = true, option = {}){
 
         changeFileStatus(fileId, status);
 
-
         return fileId;
 
     }
@@ -1274,7 +1428,7 @@ var glsl_review = function(isShow = true, option = {}){
 
     }
 
-    function addFileList( fileName, path, tabElement, viewElement, status, canvasId = 0){
+    function addFileList( fileName, path, tabElement, viewElement, status, canvasId = 0, callback = null){
 
         // #TODO ユニークな値をふる
         var fileId = fileList.length + 1;
@@ -1286,7 +1440,8 @@ var glsl_review = function(isShow = true, option = {}){
             viewElement: viewElement,
             status: status,
             canvasId: canvasId,
-            fileId: fileId
+            fileId: fileId,
+            callback: callback
         };
 
         return fileList.push(fileData);

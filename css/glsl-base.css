@@ -281,8 +281,29 @@
   color: white;
 }
 
-.glsl-base-debug-files .glsl-base-debug img {
-   background: url(data:image/gif;base64,R0lGODlhEAAQAPEBAAAAAL+/v////wAAACH5BAAAAAAALAAAAAAQABAAAAIfjG+iq4jM3IFLJipswNly/XkcBpIiVaInlLJr9FZWAQA7) fixed;
+.glsl-base-debug-files .glsl-base-debug img.image-file {
+  background: url(data:image/gif;base64,R0lGODlhEAAQAPEBAAAAAL+/v////wAAACH5BAAAAAAALAAAAAAQABAAAAIfjG+iq4jM3IFLJipswNly/XkcBpIiVaInlLJr9FZWAQA7) fixed;
+  width: 100%;
+}
+
+.glsl-base-debug-files .glsl-base-debug .image-size-display {
+  position: sticky;
+  bottom: 0px;
+  background-color: rgba(0, 0, 0, 0.51);
+  height: 25px;
+  line-height: 25px;
+  left: 0px;
+  right: 0px;
+  padding-left: 10px;
+}
+
+.glsl-base-debug-files .glsl-base-debug .image-size-display .per-content {
+  padding-left: 20px;
+}
+
+.glsl-base-debug-files iframe.pdf-frame {
+  width: 100%;
+  height: 100%;
 }
 
 .glsl-base-debug-files .glsl-base-debug::-webkit-scrollbar {

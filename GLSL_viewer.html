@@ -81,9 +81,10 @@
           }
         }
 
-        var review = new glsl_review(true, dbgOpt);
         if(!dbgOpt.winName)
-          review.recoverLastView();
+          dbgOpt.recoverLastView = true;
+        var review = new glsl_review(true, dbgOpt);
+       
 
       }
     </script>
