@@ -499,6 +499,17 @@ html[dir='ltr'] #viewerContainer {
 html[dir='rtl'] #viewerContainer {
   box-shadow: inset -1px 0 0 hsla(0,0%,100%,.05);
 }
+#viewerContainer::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.11);
+}
+#viewerContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.58);
+  border-radius: 3px;
+}
+
+
 
 .toolbar {
   position: relative;

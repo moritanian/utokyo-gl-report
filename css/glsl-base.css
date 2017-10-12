@@ -91,6 +91,7 @@
   overflow: visible;
   box-shadow: 0px 1px 2px #2f2f2f;
   display: none;
+  list-style: none;
 }
 
 #glsl-base-debug-main .top-btn .btn-dp-parent1 li {
@@ -132,6 +133,7 @@
   top: 0px;
   box-shadow: 0px 1px 2px #2f2f2f;
   display: none;
+  list-style: none;
 }
 
 #glsl-base-debug-container #top-btns #tool-dp-parent{

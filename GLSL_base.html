@@ -15,14 +15,25 @@
         <debug value="true"></debug>
         <tab-size value="4"></tab-size>
         <layout-col value="2"></layout-col>
+        <resolution value="1.0"></layout-col>
+
     </glsl-base>
 
-    <script id="fs" source="shader/floor4.fs"  type="xs/fs"></script> 
+    <script id="fs" source="shader/floor2.fs"  type="xs/fs"></script> 
     <script id="vs" type="xs/vs">
       // 頂点シェーダには一切手入れする必要なし
       attribute vec3 position;
+
+      attribute vec3 aVertexPosition;
+
+      uniform mat4 uMVMatrix;
+      uniform mat4 uPMatrix;
+      
       void main(void){
-        gl_Position = vec4(position, 1.0);
+       // gl_Position = vec4(position, 1.0);
+        gl_Position = vec4(-1.0, 1.0, 1.0, 1.0) * vec4(position, 1.0);
+        //gl_Position.x += sin(position.y);
+        //gl_Position.y += sin(position.x);
       }
     </script>
 
@@ -47,36 +58,47 @@
     <title>GLSL Base script sample</title>
   </head>
   <body>
-    <canvas id="c"></canvas>
-    <div id="glsl-base-debug-container">
+    <canvas id="c" style="width: 100%"></canvas>
+   <div id="glsl-base-debug-container">
       <div id="glsl-base-debug-normalizer">+</div>
       <div id="glsl-base-debug-main">
-        <div class="back-wall"></div>
+        <div id="back-wall"></div>
         
         <div id="top-btns">
           <div id='file-btn' class="top-btn">file</div>
           <div id='folder-btn' class="top-btn">folder</div>
           <div id='view-btn' class="top-btn">
             <div>view</div>
-            <ul id='view-dp-parent'>
-                <li id="layout-btn">
-                  <span>layout</span>
+            <ul id='view-dp-parent' class="btn-dp-parent1">
+                <li id="layout-btn" class="right-extendable">
+                  <span >layout</span>
                   <ul id="layout-dp-parent">
-                      <li class="layout-btn-child" col='1'>Single</li>
-                      <li class="layout-btn-child" col='2'>Columns: 2</li>
-                      <li class="layout-btn-child" col='3'>Columns: 3</li>
-                      <li class="layout-btn-child" col='4'>Columns: 4</li>
+                    <li class="layout-btn-child" col='1'>Single</li>
+                    <li class="layout-btn-child" col='2'>Columns: 2</li>
+                    <li class="layout-btn-child" col='3'>Columns: 3</li>
+                    <li class="layout-btn-child" col='4'>Columns: 4</li>
                   </ul>
                 </li>
-                <li>identation</li>
-                <li>font size </li>
+                <li><span>indentation</span></li>
+                <li><span>font size </span></li>
             </ul>
           </div>
-          <div id='tool-btn' class="top-btn">tool</div>
+          <div id='tool-btn' class="top-btn">
+            <div>tool</div>
+            <ul id="tool-dp-parent" class="btn-dp-parent1">
+              <li style="position: relative;"> 
+                <span> background image </span>
+                <input type="file" id="background-select" name="file" />
+              </li>
+              <li id='background-opacity'> 
+                <span class="right-extendable">background opacity </span> 
+                <div id='opacity-range'> <input id='opacity-range-input' type="range" name="range"></div>
+              </li>
+            </ul>
+          </div>
           <!--<input type="file" id="file-select" name="files[]" multiple />-->
-          <input type="file" id="file-select" name="file" />
-          <input type="file" id="folder-select" name="file" webkitdirectory/>
-
+          <input type="file" id="file-select" name="file" title='file open'/>
+          <input type="file" id="folder-select" name="file" webkitdirectory title="folder open" />
           
           <div id="minimize-btn">-</div>
 
@@ -86,13 +108,9 @@
         
         <div id='canvas-field'>
           <div id="review-canvas"></div>
-          <div id='separator-parent'></div>
           <div class="cursor blinking" id="cursor"></div>
         </div>
-
-
       </div>
     </div>
-
   </body>
 </html>

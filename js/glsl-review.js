@@ -485,7 +485,7 @@ var glsl_review = function(isShow = true, option = {}){
 
     }
 
-    
+
     var cursorElement, cursorX, cursorY;
     setCursorListener();
 
@@ -1227,6 +1227,7 @@ var glsl_review = function(isShow = true, option = {}){
 
         //var tabId = `${fileName.split(/\./)[0]}-`
         var tabElement = _$_.create('li', '', ['file-tab']);
+        tabElement.attr('title', fileName);
         
         // tab-name element
         var tabC1 = _$_.create('span', '', ['file-tab-name']);
@@ -1241,7 +1242,8 @@ var glsl_review = function(isShow = true, option = {}){
 
         var fileId = addFileList(fileName, path, tabElement, viewElement, status, canvasId, callback);
         
-
+        /*
+            title で表示
         // hover 時にpath名表示
         (function setPathIndicatorListener(tab, tabElement){
             var isHovering = false;
@@ -1277,6 +1279,7 @@ var glsl_review = function(isShow = true, option = {}){
                 return true;
             });
         })(tabC1, tabElement);
+        */
 
         // ドラッグ
         (function setDragTabListener(tabC, tabElement, fileId){
@@ -1628,7 +1631,20 @@ var glsl_review = function(isShow = true, option = {}){
 
         var ticking = false, allShowState = 0;
         var lEchildrenLength = lE.children().length;
-        var showLineNum = Math.ceil( styleData.reviewCanvas.height / lineHeight); // 40
+        var showLineNum;
+
+        function updateShowLineNum(){
+            getStyleData();
+            showLineNum = Math.ceil( styleData.reviewCanvas.height / lineHeight); // 40
+        }
+
+        updateShowLineNum();
+
+        // resize
+        window.addEventListener('resize', function(e){
+            updateShowLineNum();
+            updateShowLine();
+        });
         
         lE.addClass('scroll-performance');
         var start = 0;
@@ -1640,8 +1656,10 @@ var glsl_review = function(isShow = true, option = {}){
             _$_(lE.children()[id]).addClass('show');
         }
         
-        lE.addEventListener('scroll', function(e) {
-          instance.sY = lE.scrollTop;
+        lE.addEventListener('scroll', updateShowLine);
+
+        function updateShowLine() {
+            instance.sY = lE.scrollTop;
             if (!ticking) {
                 
                 window.requestAnimationFrame(function() {
@@ -1703,7 +1721,7 @@ var glsl_review = function(isShow = true, option = {}){
             ticking = true;
 
             return true;
-        });
+        }
 
         this.scrollCurrentPosition = function(){
             this.scroll(this.sY);

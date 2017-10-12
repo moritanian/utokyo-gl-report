@@ -24,7 +24,7 @@
 // オンロードイベントがエントリポイント
 window.onload = function(){
 
-     // 変数宣言
+    // 変数宣言
     var a, b, c, d, e, f, g, h, m, l, p, t, u, v, w, x, y, z;
     var dbg, dbgOpt, gebt, vsFilePath, fsFilePath, review;
 
@@ -150,7 +150,7 @@ window.onload = function(){
     // debug mode
     gebt = function(t){return document.getElementsByTagName(t)};
     dbg = false;
-    dbgOpt = {tab: "\t"};
+    dbgOpt = {tab: "\t", resolution: 1.0};
 
     var glsl_base_e = gebt('glsl-base');
     
@@ -185,7 +185,11 @@ window.onload = function(){
 
                 case "LAYOUT-COL":
                     dbgOpt.layoutCol = ce.getAttribute('value') || 1;
+                    break;
 
+                case "RESOLUTION":
+                    dbgOpt.resolution = ce.getAttribute('value') || 1;
+                    break;
             }
         }
     }
@@ -268,7 +272,7 @@ window.onload = function(){
         u.mouse = g.getUniformLocation(p, 'mouse');
        
         // mouse 座標取得
-        document.addEventListener("mousemove", function(e){m[0] = e.clientX/x; m[1] = e.clientY/y;});
+        document.addEventListener("mousemove", function(e){m[0] = e.clientX/w.innerWidth; m[1] = e.clientY/w.innerHeight;});
         //document.addEventListener('resize', function(e){sX = window.parent.screen.width; sY = window.parent.screen.height;});
       
         // VBO用のバッファオブジェクトを生成
@@ -294,10 +298,10 @@ window.onload = function(){
         (function render(){
           // シェーダのリンクに失敗していたら実行しない
             if(!e){return;}
-
             // ビューポートを動的に指定する
-            c.width = x = w.innerWidth;
-            c.height = y = w.innerHeight;
+            c.width = x = w.innerWidth * dbgOpt.resolution;
+            
+            c.height = y = w.innerHeight * dbgOpt.resolution
             g.viewport(0, 0, x, y);
 
             // 時間の経過を調べる
@@ -310,7 +314,6 @@ window.onload = function(){
             g.uniform1f(u.time, d);
             g.uniform2fv(u.resolution, [x, y]);
             g.uniform2fv(u.mouse, m);
-
             // プリミティブのレンダリング
             g.drawArrays(g.TRIANGLE_STRIP, 0, 4);
             g.flush();
